@@ -1,5 +1,1 @@
-flask
-requests
-beautifulsoup4
-gunicorn
-
+flask>=3.0.0,<4.0.0  # Web framework - lightweight and fast for our API server and template rendering. Chosen over Django/FastAPI for simplicity in a single-file app.  requests>=2.31.0,<3.0.0  # HTTP client for calling AniList GraphQL API, AnimeHeaven scraping, Groq AI API, and proxying video streams.  beautifulsoup4>=4.12.0,<5.0.0  # HTML parser for extracting episode hashes, stream URLs, and anime metadata from AnimeHeaven.me pages.  gunicorn>=21.0.0,<23.0.0  # WSGI HTTP server for production deployment on Render.com. Flask's built-in server is NOT suitable for production.  lxml>=4.9.0,<6.0.0  # Fast XML/HTML parser backend for BeautifulSoup4. Significantly faster than html.parser for large pages like 500-episode anime lists.  urllib3>=2.0.0,<3.0.0  # HTTP client library used by requests. Ensures compatibility and security patches.  certifi>=2024.0.0  # Mozilla's CA bundle for SSL certificate verification. Prevents SSL errors on Render's environment.  charset-normalizer>=3.0.0,<4.0.0  # Character encoding detection for AnimeHeaven HTML responses (varies between UTF-8 and ISO-8859-1).  idna>=3.0.0,<4.0.0  # Internationalized domain name support for requests library.  
