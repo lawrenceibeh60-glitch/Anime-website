@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KYRO AI Anime Downloader</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0d12;color:#e8e8e8;min-height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#1a1a24}
+::-webkit-scrollbar-thumb{background:#e94560;border-radius:3px}
+.header{background:#15151f;padding:12px 25px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #e94560;position:fixed;top:0;left:0;right:0;z-index:100;height:55px}
+.logo{font-size:24px;font-weight:900;color:#e94560;letter-spacing:3px;text-transform:uppercase}
+.logo span{color:#fff;font-weight:300;margin-left:8px}
+.status-bar{display:flex;gap:18px;align-items:center}
+.status-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.status-dot{width:8px;height:8px;border-radius:50%}
+.status-dot.on{background:#00d26a;box-shadow:0 0 8px #00d26a}
+.status-dot.off{background:#ff4757;box-shadow:0 0 8px #ff4757}
+.main{display:flex;height:100vh;padding-top:55px}
+.sidebar{width:360px;background:#111118;border-right:1px solid #22222e;display:flex;flex-direction:column;flex-shrink:0}
+.chat-header{background:#15151f;padding:16px 20px;border-bottom:1px solid #22222e}
+.chat-header h2{color:#e94560;font-size:16px;letter-spacing:2px;text-transform:uppercase}
+.chat-header p{font-size:11px;color:#666;margin-top:4px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:95%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;word-break:break-word;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.msg-user{align-self:flex-end;background:#e94560;color:#fff}
+.msg-ai{align-self:flex-start;background:#1a1a24;border:1px solid #2a2a35}
+.msg-ai strong{color:#e94560}
+.msg-time{font-size:9px;color:#888;margin-top:4px;opacity:.7}
+.chat-input{display:flex;padding:14px;border-top:1px solid #22222e;gap:8px;background:#15151f}
+.chat-input input{flex:1;background:#1a1a24;border:1px solid #2a2a35;border-radius:10px;padding:11px 14px;color:#fff;font-size:13px;outline:none;transition:.2s}
+.chat-input input:focus{border-color:#e94560}
+.chat-input button{background:#e94560;border:none;border-radius:10px;padding:11px 20px;color:#fff;font-weight:700;cursor:pointer;transition:.2s;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+.chat-input button:hover{background:#ff6b81}
+.content{flex:1;overflow-y:auto;padding:24px;background:#0d0d12}
+.search-box{display:flex;gap:10px;margin-bottom:24px;max-width:600px}
+.search-box input{flex:1;background:#15151f;border:1px solid #2a2a35;border-radius:12px;padding:14px 18px;color:#fff;font-size:14px;outline:none;transition:.2s}
+.search-box input:focus{border-color:#e94560}
+.search-box button{background:#e94560;border:none;border-radius:12px;padding:14px 28px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;text-transform:uppercase;letter-spacing:1px}
+.search-box button:hover{background:#ff6b81}
+.section-title{font-size:18px;font-weight:700;color:#e94560;margin-bottom:16px;display:flex;align-items:center;gap:10px;text-transform:uppercase;letter-spacing:1px}
+.anime-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.anime-card{background:#15151f;border-radius:14px;overflow:hidden;cursor:pointer;transition:.3s;border:1px solid #22222e;position:relative}
+.anime-card:hover{transform:translateY(-6px);border-color:#e94560;box-shadow:0 12px 35px #e9456018}
+.anime-card img{width:100%;height:240px;object-fit:cover;display:block}
+.anime-card-info{padding:12px}
+.anime-card-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.anime-card-meta{font-size:10px;color:#888;display:flex;gap:6px;flex-wrap:wrap}
+.anime-card-meta span{background:#1a1a24;padding:3px 8px;border-radius:4px}
+.anime-card .score-badge{position:absolute;top:8px;right:8px;background:#e94560;color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.episode-list{display:flex;flex-direction:column;gap:8px}
+.episode-item{background:#15151f;border:1px solid #22222e;border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;transition:.2s}
+.episode-item:hover{border-color:#e94560;background:#1a1a24}
+.episode-item-left{display:flex;align-items:center;gap:14px}
+.ep-num{background:#e94560;color:#fff;font-weight:800;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px}
+.ep-info{display:flex;flex-direction:column;gap:2px}
+.ep-title{font-size:14px;font-weight:600;color:#fff}
+.ep-sub{font-size:11px;color:#666}
+.ep-sub.ok{color:#00d26a}
+.ep-sub.bad{color:#ff4757}
+.ep-btns{display:flex;gap:8px}
+.ep-btn{background:#1a1a24;border:1px solid #2a2a35;border-radius:8px;padding:7px 16px;color:#fff;font-size:12px;cursor:pointer;transition:.2s;font-weight:600}
+.ep-btn:hover{background:#e94560;border-color:#e94560}
+.ep-btn.watch{background:#e94560;border-color:#e94560}
+.ep-btn.download{background:#2d2d3a;border-color:#3a3a4a}
+.ep-btn.download:hover{background:#00d26a;border-color:#00d26a}
+.back-btn{background:none;border:1px solid #e94560;color:#e94560;padding:8px 16px;border-radius:8px;cursor:pointer;margin-bottom:16px;font-size:12px;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.back-btn:hover{background:#e94560;color:#fff}
+.anime-detail{display:flex;gap:24px;margin-bottom:24px}
+.anime-detail img{width:200px;height:300px;object-fit:cover;border-radius:14px;border:1px solid #2a2a35;box-shadow:0 8px 25px #00000055}
+.anime-detail-info{flex:1}
+.anime-detail-info h1{font-size:28px;color:#fff;margin-bottom:10px}
+.anime-detail-info .meta{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.anime-detail-info .meta span{background:#1a1a24;padding:5px 12px;border-radius:6px;font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px}
+.anime-detail-info p{color:#999;line-height:1.7;font-size:13px;max-height:120px;overflow-y:auto}
+.loading{text-align:center;padding:40px;color:#666}
+.spinner{width:32px;height:32px;border:3px solid #2a2a35;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+.player-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000f0;display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.player-box{width:100%;max-width:1100px;background:#15151f;border-radius:16px;overflow:hidden;border:1px solid #2a2a35}
+.player-box video{width:100%;height:520px;background:#000;display:block}
+.player-header{padding:16px 20px;background:#1a1a24;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2a2a35}
+.player-header h3{color:#fff;font-size:15px;font-weight:600}
+.player-actions{display:flex;gap:10px}
+.player-actions button{background:#2a2a35;border:1px solid #3a3a45;border-radius:8px;padding:7px 16px;color:#fff;font-size:12px;cursor:pointer;transition:.2s;font-weight:600}
+.player-actions button:hover{background:#e94560;border-color:#e94560}
+.player-actions button.dl:hover{background:#00d26a;border-color:#00d26a}
+.player-close{position:absolute;top:20px;right:20px;background:#ff4757;border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;transition:.2s}
+.player-close:hover{transform:scale(1.1)}
+.toast{position:fixed;top:70px;right:20px;background:#15151f;border:1px solid #e94560;border-radius:12px;padding:14px 22px;color:#fff;font-size:13px;z-index:2000;transform:translateX(450px);transition:.4s;box-shadow:0 10px 30px #00000088}
+.toast.show{transform:translateX(0)}
+.toast.success{border-color:#00d26a}
+.toast.error{border-color:#ff4757}
+.ah-search-box{display:flex;gap:10px;margin:16px 0;padding:16px;background:#15151f;border-radius:12px;border:1px solid #22222e}
+.ah-search-box input{flex:1;background:#1a1a24;border:1px solid #2a2a35;border-radius:10px;padding:12px 14px;color:#fff;font-size:13px;outline:none}
+.ah-search-box input:focus{border-color:#e94560}
+.ah-search-box button{background:#e94560;border:none;border-radius:10px;padding:12px 20px;color:#fff;font-weight:700;cursor:pointer;font-size:12px}
+.status-msg{padding:12px 16px;background:#1a1a24;border-radius:10px;border:1px solid #2a2a35;margin-bottom:16px;font-size:13px;color:#aaa}
+.status-msg.ok{color:#00d26a;border-color:#00d26a44}
+.status-msg.bad{color:#ff4757;border-color:#ff475744}
+.status-msg.warn{color:#ffa502;border-color:#ffa50244}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">KYRO<span>AI ANIME</span></div>
+  <div class="status-bar">
+    <div class="status-item"><span class="status-dot off" id="dot-ah"></span>AnimeHeaven</div>
+    <div class="status-item"><span class="status-dot off" id="dot-anilist"></span>AniList</div>
+    <div class="status-item"><span class="status-dot off" id="dot-groq"></span>Groq AI</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="chat-header">
+      <h2>KYRO AI</h2>
+      <p>Ask about anime, get recommendations, find episodes</p>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg msg-ai"><strong>KYRO:</strong> Hey! Ask me anything about anime. I can recommend shows, find episodes, or help you discover new series!</div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chat-input" placeholder="Ask KYRO..." onkeypress="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+    <div id="search-view">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search anime..." onkeypress="if(event.key==='Enter')doSearch()">
+        <button onclick="doSearch()">Search</button>
+      </div>
+      <div class="section-title">Trending Now</div>
+      <div class="anime-grid" id="anime-grid"></div>
+    </div>
+
+    <div id="detail-view" class="hidden">
+      <button class="back-btn" onclick="showSearch()">&#8592; Back</button>
+      <div class="anime-detail" id="detail-content"></div>
+      <div id="ah-status" class="status-msg" style="display:none"></div>
+      <div class="ah-search-box" id="ah-search-box" style="display:none">
+        <input type="text" id="ah-search-input" placeholder="Search AnimeHeaven manually...">
+        <button onclick="manualAhSearch()">Search AH</button>
+      </div>
+      <div class="section-title">Episodes</div>
+      <div class="episode-list" id="episode-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="player-overlay" class="player-overlay hidden">
+  <button class="player-close" onclick="closePlayer()">&times;</button>
+  <div class="player-box">
+    <div class="player-header">
+      <h3 id="player-title">Episode</h3>
+      <div class="player-actions">
+        <button class="dl" onclick="downloadCurrent()">&#11015; Download</button>
+        <button onclick="nextEpisode()">Next &#9654;</button>
+      </div>
+    </div>
+    <video id="video-player" controls autoplay></video>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+let currentAnime = null;
+let currentEpisodes = [];
+let currentEpIndex = 0;
+let chatHistory = [];
+let currentStreamUrl = "";
+let currentAhId = "";
+
+function showToast(msg, type="") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast " + (type || "");
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 4000);
+}
+
+function setStatus(msg, type="") {
+  const el = document.getElementById("ah-status");
+  el.textContent = msg;
+  el.className = "status-msg " + type;
+  el.style.display = "block";
+}
+
+async function checkStatus() {
+  try {
+    const r = await fetch("/api/status");
+    const s = await r.json();
+    setDot("dot-ah", s.animeheaven === "connected");
+    setDot("dot-anilist", s.anilist === "connected");
+    setDot("dot-groq", s.groq === "connected");
+  } catch(e) {
+    setDot("dot-ah", false);
+    setDot("dot-anilist", false);
+    setDot("dot-groq", false);
+  }
+}
+function setDot(id, on) {
+  document.getElementById(id).className = "status-dot " + (on ? "on" : "off");
+}
+checkStatus();
+setInterval(checkStatus, 10000);
+
+async function loadTrending() {
+  const grid = document.getElementById("anime-grid");
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div>Loading trending...</div>';
+  try {
+    const r = await fetch("/api/search?q=");
+    const data = await r.json();
+    renderAnimeGrid(data.results || []);
+  } catch(e) { grid.innerHTML = '<div class="loading">Failed to load.</div>'; }
+}
+loadTrending();
+
+function renderAnimeGrid(list) {
+  const grid = document.getElementById("anime-grid");
+  if (!list.length) { grid.innerHTML = '<div class="loading">No results.</div>'; return; }
+  grid.innerHTML = list.map(a => `
+    <div class="anime-card" onclick='openAnime(${a.id})'>
+      <img src="${esc(a.image)}" alt="${esc(a.title)}" onerror="this.src='https://via.placeholder.com/170x240/15151f/e94560?text=No+Image'">
+      ${a.score ? `<div class="score-badge">${a.score}</div>` : ""}
+      <div class="anime-card-info">
+        <div class="anime-card-title">${esc(a.title_english || a.title)}</div>
+        <div class="anime-card-meta">
+          ${a.episodes ? `<span>${a.episodes} EP</span>` : ""}
+          ${a.year ? `<span>${a.year}</span>` : ""}
+          ${a.genres?.slice(0,2).map(g => `<span>${esc(g)}</span>`).join("") || ""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function doSearch() {
+  const q = document.getElementById("search-input").value.trim();
+  if (!q) return;
+  const grid = document.getElementById("anime-grid");
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div>Searching...</div>';
+  try {
+    const r = await fetch("/api/search?q=" + encodeURIComponent(q));
+    const data = await r.json();
+    document.querySelector("#search-view .section-title").textContent = data.results?.length ? `Results for "${esc(q)}"` : "No Results";
+    renderAnimeGrid(data.results || []);
+  } catch(e) { grid.innerHTML = '<div class="loading">Search failed.</div>'; }
+}
+
+async function openAnime(id) {
+  document.getElementById("search-view").classList.add("hidden");
+  document.getElementById("detail-view").classList.remove("hidden");
+  document.getElementById("detail-content").innerHTML = '<div class="loading"><div class="spinner"></div>Loading anime info...</div>';
+  document.getElementById("episode-list").innerHTML = '<div class="loading"><div class="spinner"></div>Loading episodes...</div>';
+  document.getElementById("ah-status").style.display = "none";
+  document.getElementById("ah-search-box").style.display = "none";
+  currentEpisodes = [];
+  currentAhId = "";
+
+  try {
+    const r = await fetch("/api/anime/" + id);
+    const anime = await r.json();
+    currentAnime = anime;
+
+    document.getElementById("detail-content").innerHTML = `
+      <img src="${esc(anime.image)}" alt="${esc(anime.title)}" onerror="this.src='https://via.placeholder.com/200x300'">
+      <div class="anime-detail-info">
+        <h1>${esc(anime.title_english || anime.title)}</h1>
+        <div class="meta">
+          ${anime.score ? `<span>Score: ${anime.score}</span>` : ""}
+          ${anime.episodes ? `<span>${anime.episodes} Episodes</span>` : ""}
+          ${anime.year ? `<span>${anime.year}</span>` : ""}
+          ${anime.status ? `<span>${esc(anime.status)}</span>` : ""}
+          ${anime.genres?.map(g => `<span>${esc(g)}</span>`).join("") || ""}
+        </div>
+        <p>${esc(anime.synopsis || "No description.")}</p>
+      </div>
+    `;
+
+    // Try to find on AnimeHeaven
+    setStatus("Searching AnimeHeaven...", "warn");
+    await findAnimeHeavenEpisodes(anime);
+
+  } catch(e) {
+    document.getElementById("detail-content").innerHTML = '<div class="loading">Error loading anime.</div>';
+  }
+}
+
+async function findAnimeHeavenEpisodes(anime) {
+  const searchTitles = [anime.title_english, anime.title].filter(Boolean);
+  let found = false;
+
+  for (const searchTitle of searchTitles) {
+    try {
+      setStatus(`Searching AnimeHeaven for: "${searchTitle}"...`, "warn");
+      const r = await fetch("/api/animeheaven/search?q=" + encodeURIComponent(searchTitle));
+      const ah = await r.json();
+
+      if (ah.results?.length) {
+        const ahId = ah.results[0].id;
+        const r2 = await fetch("/api/animeheaven/episodes/" + ahId);
+        const epData = await r2.json();
+
+        if (epData.episodes?.length) {
+          currentAhId = ahId;
+          currentEpisodes = epData.episodes;
+          setStatus(`Found ${epData.episodes.length} episodes on AnimeHeaven!`, "ok");
+          renderEpisodes(currentEpisodes);
+          found = true;
+          break;
+        }
+      }
+    } catch(e) { /* try next title */ }
+  }
+
+  if (!found) {
+    setStatus("AnimeHeaven doesn't have this anime yet. Try searching manually below.", "bad");
+    document.getElementById("ah-search-box").style.display = "flex";
+    document.getElementById("ah-search-input").value = anime.title_english || anime.title;
+    generateGenericEpisodes(anime.episodes);
+  }
+}
+
+async function manualAhSearch() {
+  const q = document.getElementById("ah-search-input").value.trim();
+  if (!q) return;
+
+  setStatus(`Manually searching AnimeHeaven for: "${q}"...`, "warn");
+  try {
+    const r = await fetch("/api/animeheaven/search?q=" + encodeURIComponent(q));
+    const ah = await r.json();
+
+    if (ah.results?.length) {
+      const ahId = ah.results[0].id;
+      const r2 = await fetch("/api/animeheaven/episodes/" + ahId);
+      const epData = await r2.json();
+
+      if (epData.episodes?.length) {
+        currentAhId = ahId;
+        currentEpisodes = epData.episodes;
+        setStatus(`Found ${epData.episodes.length} episodes!`, "ok");
+        renderEpisodes(currentEpisodes);
+      } else {
+        setStatus("Found anime but no episodes listed.", "bad");
+      }
+    } else {
+      setStatus("No results on AnimeHeaven for this search.", "bad");
+    }
+  } catch(e) {
+    setStatus("Error searching AnimeHeaven.", "bad");
+  }
+}
+
+function generateGenericEpisodes(count) {
+  count = count || 12;
+  currentEpisodes = [];
+  for (let i = 1; i <= count; i++) {
+    currentEpisodes.push({hash: "", number: String(i), title: `Episode ${i}`, anime_id: ""});
+  }
+  renderEpisodes(currentEpisodes);
+}
+
+function renderEpisodes(eps) {
+  const list = document.getElementById("episode-list");
+  list.innerHTML = eps.map((ep, i) => `
+    <div class="episode-item" data-index="${i}">
+      <div class="episode-item-left">
+        <div class="ep-num">${ep.number}</div>
+        <div class="ep-info">
+          <div class="ep-title">${esc(ep.title)}</div>
+          <div class="ep-sub ${ep.hash ? 'ok' : 'bad'}">${ep.hash ? "Stream & Download Ready" : "Not available on AnimeHeaven"}</div>
+        </div>
+      </div>
+      <div class="ep-btns">
+        ${ep.hash ? `
+          <button class="ep-btn watch" onclick="playEpisode(${i})">&#9658; Watch</button>
+          <select class="ep-btn" id="dl-quality-${i}" style="background:#1a1a24;border:1px solid #2a2a35;border-radius:8px;padding:7px 6px;color:#fff;font-size:11px;cursor:pointer;width:70px">
+            <option value="original">Original</option>
+            <option value="720p">720p</option>
+            <option value="480p">480p</option>
+            <option value="360p">360p</option>
+          </select>
+          <button class="ep-btn download" onclick="dlEpisode(${i})">&#11015; DL</button>
+        ` : `
+          <span style="color:#666;font-size:12px">No source</span>
+        `}
+      </div>
+    </div>
+  `).join("");
+}
+
+async function playEpisode(index) {
+  currentEpIndex = index;
+  const ep = currentEpisodes[index];
+  if (!ep || !ep.hash) { showToast("No stream available for this episode", "error"); return; }
+
+  showToast("Loading stream...");
+  try {
+    const r = await fetch("/api/stream/" + ep.hash);
+    const data = await r.json();
+
+    if (data.url) {
+      currentStreamUrl = data.url;
+      document.getElementById("player-title").textContent = (currentAnime?.title_english || currentAnime?.title || "") + " - " + ep.title;
+      document.getElementById("video-player").src = "/api/proxy-stream?url=" + encodeURIComponent(data.url);
+      document.getElementById("player-overlay").classList.remove("hidden");
+      showToast("Now playing: " + ep.title, "success");
+    } else {
+      showToast("Stream not found on server", "error");
+    }
+  } catch(e) { showToast("Error loading stream: " + e.message, "error"); }
+}
+
+async function dlEpisode(index) {
+  const ep = currentEpisodes[index];
+  if (!ep || !ep.hash) { showToast("No download link for this episode", "error"); return; }
+
+  const qualitySelect = document.getElementById("dl-quality-" + index);
+  const quality = qualitySelect ? qualitySelect.value : "original";
+
+  showToast("Getting download link...");
+  try {
+    const r = await fetch("/api/stream/" + ep.hash);
+    const data = await r.json();
+
+    if (data.url) {
+      const baseName = ((currentAnime?.title_english || currentAnime?.title || "episode").replace(/[^a-z0-9]/gi, "_")) + "_EP" + ep.number;
+      const fname = quality === "original" ? baseName + ".mp4" : baseName + "_" + quality + ".mp4";
+      const a = document.createElement("a");
+      a.href = "/api/download?url=" + encodeURIComponent(data.url) + "&filename=" + encodeURIComponent(fname) + "&quality=" + quality;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast("Downloading: " + fname, "success");
+    } else {
+      showToast("Download URL not found on server", "error");
+    }
+  } catch(e) { showToast("Download failed: " + e.message, "error"); }
+}
+
+function downloadCurrent() {
+  if (currentEpisodes[currentEpIndex]) dlEpisode(currentEpIndex);
+}
+
+function nextEpisode() {
+  if (currentEpIndex < currentEpisodes.length - 1) {
+    playEpisode(currentEpIndex + 1);
+  } else {
+    showToast("This is the last episode", "error");
+  }
+}
+
+function closePlayer() {
+  document.getElementById("video-player").pause();
+  document.getElementById("video-player").src = "";
+  document.getElementById("player-overlay").classList.add("hidden");
+}
+
+function showSearch() {
+  document.getElementById("search-view").classList.remove("hidden");
+  document.getElementById("detail-view").classList.add("hidden");
+  currentEpisodes = [];
+  currentAhId = "";
+}
+
+async function sendChat() {
+  const input = document.getElementById("chat-input");
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = "";
+
+  const box = document.getElementById("chat-messages");
+  box.innerHTML += `<div class="msg msg-user">${esc(msg)}<div class="msg-time">You</div></div>`;
+  box.scrollTop = box.scrollHeight;
+  chatHistory.push({role: "user", content: msg});
+
+  try {
+    const r = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({messages: chatHistory})
+    });
+    const data = await r.json();
+
+    if (data.reply && !data.reply.includes("Error") && !data.reply.includes("error")) {
+      box.innerHTML += `<div class="msg msg-ai"><strong>KYRO:</strong> ${fmt(data.reply)}<div class="msg-time">KYRO</div></div>`;
+      chatHistory.push({role: "assistant", content: data.reply});
+    } else {
+      box.innerHTML += `<div class="msg msg-ai"><strong>KYRO:</strong> I'm having trouble connecting to my brain right now. Ask me about anime recommendations, genres like action/romance/isekai, or specific shows!<div class="msg-time">KYRO</div></div>`;
+    }
+  } catch(e) {
+    box.innerHTML += `<div class="msg msg-ai"><strong>KYRO:</strong> Connection issue. Try again in a moment.<div class="msg-time">KYRO</div></div>`;
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+function fmt(text) {
+  return esc(text).replace(/\n/g, "<br>").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+function esc(text) {
+  if (!text) return "";
+  const d = document.createElement("div");
+  d.textContent = text;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
