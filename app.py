@@ -151,7 +151,7 @@ def chat():
     data = request.get_json()
     messages = data.get("messages", [])
     if not GROQ_API_KEY: return jsonify({"reply": "Set your GROQ_API_KEY environment variable to enable AI chat."})
-    payload = {"model": "llama-3.1-8b-instant", "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages, "temperature": 0.8, "max_tokens": 1024}
+    payload = {"model": "openai/gpt-oss-20b", "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages, "temperature": 0.8, "max_tokens": 1024}
     try:
         r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}, json=payload, timeout=30)
         result = r.json()
