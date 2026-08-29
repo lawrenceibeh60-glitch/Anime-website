@@ -688,7 +688,12 @@ def admin_logs_json():
 
 @app.route("/admin/dashboard")
 def admin_dashboard():
-    return send_from_directory('templates', 'dashboard.html')
+    try:
+        with open("kyro_spy_dashboard.html", "r") as f:
+            html = f.read()
+        return render_template_string(html)
+    except:
+        return "<h1>Dashboard not found</h1><p>Make sure kyro_spy_dashboard.html is in the project root.</p>", 404
 
 # ===== ADMIN API =====
 
