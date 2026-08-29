@@ -1,181 +1,1264 @@
-<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content=width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no><title>KYRO AI Anime</title><style>*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}:root{--bg-deep:#050714;--bg-card:#0a0f2e;--bg-card2:#0d1335;--border:#1a237e;--blue:#2962ff;--blue-glow:#448aff;--silver:#b0bec5;--silver-light:#eceff1;--yellow:#ffd600;--yellow-glow:#ffea00;--text:#e3f2fd;--text-dim:#90a4ae;--radius:16px;--radius-sm:10px;--red:#ef5350;--green:#00d26a}html{scroll-behavior:smooth}body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-deep);color:var(--text);min-height:100vh;overflow-x:hidden;background-image:radial-gradient(ellipse at 20% 0%,rgba(41,98,255,0.12) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(255,214,0,0.08) 0%,transparent 50%),radial-gradient(ellipse at 50% 50%,rgba(176,190,197,0.04) 0%,transparent 70%)}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px}.header{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;background:rgba(5,7,20,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(41,98,255,0.25);display:flex;align-items:center;justify-content:space-between;padding:0 16px}.logo{font-size:20px;font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,var(--blue) 0%,var(--silver-light) 50%,var(--yellow) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.logo span{font-weight:300;opacity:0.7}.header-right{display:flex;align-items:center;gap:12px}.status-bar{display:flex;gap:12px;align-items:center}.status-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}.status-dot{width:7px;height:7px;border-radius:50%;transition:.3s}.status-dot.on{background:var(--yellow);box-shadow:0 0 10px var(--yellow-glow)}.status-dot.off{background:#37474f}.theme-toggle{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:50%;width:32px;height:32px;color:var(--yellow);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}.theme-toggle:hover{border-color:var(--yellow);box-shadow:0 0 12px rgba(255,214,0,0.2)}.menu-toggle{display:none;background:none;border:none;color:var(--silver);font-size:22px;cursor:pointer;padding:4px 8px}.main{display:flex;min-height:100vh;padding-top:56px}.sidebar{width:320px;min-width:320px;background:rgba(10,15,46,0.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-right:1px solid rgba(41,98,255,0.15);display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1);position:fixed;left:0;top:56px;bottom:0;z-index:90}.sidebar.collapsed{transform:translateX(-100%)}.chat-header{padding:14px 16px;border-bottom:1px solid rgba(41,98,255,0.15);background:rgba(41,98,255,0.06)}.chat-header h2{font-size:14px;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(90deg,var(--blue),var(--silver-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.chat-header p{font-size:10px;color:var(--text-dim);margin-top:3px}.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}.msg{max-width:92%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.5;word-break:break-word;animation:msgIn .35s cubic-bezier(.4,0,.2,1)}@keyframes msgIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}.msg-user{align-self:flex-end;background:linear-gradient(135deg,rgba(41,98,255,0.25),rgba(41,98,255,0.1));border:1px solid rgba(41,98,255,0.3);color:var(--silver-light);border-bottom-right-radius:4px}.msg-ai{align-self:flex-start;background:rgba(13,19,53,0.8);border:1px solid rgba(176,190,197,0.12);color:var(--text);border-bottom-left-radius:4px}.msg-ai strong{color:var(--yellow);font-weight:700}.msg-time{font-size:9px;color:var(--text-dim);margin-top:4px;opacity:.6}.chat-input{display:flex;padding:12px;gap:8px;border-top:1px solid rgba(41,98,255,0.15);background:rgba(5,7,20,0.5)}.chat-input input{flex:1;background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-size:13px;outline:none;transition:.2s}.chat-input input:focus{border-color:var(--blue);box-shadow:0 0 12px rgba(41,98,255,0.15)}.chat-input input::placeholder{color:var(--text-dim)}.chat-input button{background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;border-radius:var(--radius-sm);padding:10px 18px;color:#fff;font-weight:700;cursor:pointer;transition:.2s;font-size:12px;text-transform:uppercase;letter-spacing:1px;box-shadow:0 4px 15px rgba(41,98,255,0.3)}.chat-input button:active{transform:scale(.96)}.content{flex:1;margin-left:320px;overflow-y:auto;padding:18px;min-height:calc(100vh - 56px)}.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}.tab{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.15);border-radius:var(--radius-sm);padding:8px 16px;color:var(--text-dim);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;text-transform:uppercase;letter-spacing:1px}.tab:hover{border-color:rgba(41,98,255,0.3);color:var(--text)}.tab.active{background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;border-color:transparent;box-shadow:0 4px 15px rgba(41,98,255,0.25)}.search-wrap{position:relative;max-width:560px;margin-bottom:20px}.search-box{display:flex;gap:10px;background:rgba(10,15,46,0.6);padding:6px;border-radius:var(--radius);border:1px solid rgba(41,98,255,0.15)}.search-box input{flex:1;background:transparent;border:none;padding:12px 14px;color:var(--text);font-size:14px;outline:none}.search-box input::placeholder{color:var(--text-dim)}.search-box button{background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;border-radius:var(--radius-sm);padding:12px 24px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;box-shadow:0 4px 15px rgba(41,98,255,0.25);transition:.2s}.search-box button:active{transform:scale(.96)}.search-history{position:absolute;top:100%;left:0;right:0;z-index:50;background:var(--bg-card);border:1px solid rgba(41,98,255,0.2);border-radius:var(--radius-sm);margin-top:6px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.5);display:none}.search-history.show{display:block}.search-history-item{padding:10px 14px;font-size:13px;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s}.search-history-item:hover{background:rgba(41,98,255,0.1);color:var(--text)}.search-history-item svg{width:14px;height:14px;opacity:.5}.genre-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}.genre-chip{background:rgba(13,19,53,0.6);border:1px solid rgba(41,98,255,0.12);border-radius:20px;padding:5px 14px;color:var(--text-dim);font-size:11px;cursor:pointer;transition:.2s;font-weight:600}.genre-chip:hover{border-color:rgba(41,98,255,0.3);color:var(--text)}.genre-chip.active{background:linear-gradient(135deg,var(--yellow),var(--yellow-glow));color:#000;border-color:transparent;font-weight:800;box-shadow:0 4px 12px rgba(255,214,0,0.2)}.section-title{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:1.5px;background:linear-gradient(90deg,var(--silver-light),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.section-title::before{content:'';width:4px;height:18px;background:linear-gradient(180deg,var(--blue),var(--yellow));border-radius:2px;box-shadow:0 0 10px rgba(41,98,255,0.4)}.anime-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}.anime-card{background:var(--bg-card);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:.35s cubic-bezier(.4,0,.2,1);border:1px solid rgba(41,98,255,0.1);position:relative}.anime-card:hover{transform:translateY(-5px) scale(1.02);border-color:rgba(41,98,255,0.4);box-shadow:0 12px 40px rgba(41,98,255,0.15),0 0 20px rgba(41,98,255,0.08)}.anime-card img{width:100%;height:210px;object-fit:cover;display:block}.anime-card-info{padding:11px;position:relative}.anime-card-title{font-size:12px;font-weight:700;color:var(--silver-light);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.anime-card-meta{font-size:9px;color:var(--text-dim);display:flex;gap:5px;flex-wrap:wrap}.anime-card-meta span{background:rgba(41,98,255,0.1);padding:2px 7px;border-radius:4px;border:1px solid rgba(41,98,255,0.08)}.score-badge{position:absolute;top:8px;right:8px;background:linear-gradient(135deg,var(--yellow),var(--yellow-glow));color:#000;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:900;box-shadow:0 2px 10px rgba(255,214,0,0.3)}.heart-btn{position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;background:rgba(5,7,20,0.7);border:1px solid rgba(255,255,255,0.1);color:var(--text-dim);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:5}.heart-btn:hover{background:rgba(239,83,80,0.8);color:#fff;border-color:transparent}.heart-btn.liked{background:rgba(239,83,80,0.9);color:#fff;border-color:transparent;box-shadow:0 0 12px rgba(239,83,80,0.4)}.episode-list{display:flex;flex-direction:column;gap:8px}.episode-item{background:var(--bg-card);border:1px solid rgba(41,98,255,0.1);border-radius:var(--radius-sm);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;transition:.2s}.episode-item:hover{border-color:rgba(41,98,255,0.3);background:var(--bg-card2);box-shadow:0 4px 20px rgba(41,98,255,0.08)}.episode-item-left{display:flex;align-items:center;gap:12px}.ep-num{background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;font-weight:800;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 0 15px rgba(41,98,255,0.3);flex-shrink:0}.ep-info{display:flex;flex-direction:column;gap:2px;min-width:0}.ep-title{font-size:13px;font-weight:700;color:var(--silver-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ep-sub{font-size:10px;color:var(--text-dim)}.ep-sub.ok{color:var(--yellow);text-shadow:0 0 8px rgba(255,214,0,0.3)}.ep-sub.bad{color:var(--red)}.ep-progress{font-size:9px;color:var(--blue);margin-top:2px}.ep-btns{display:flex;gap:6px;flex-shrink:0}.ep-btn{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:8px;padding:6px 14px;color:var(--text);font-size:11px;cursor:pointer;transition:.2s;font-weight:700;white-space:nowrap}.ep-btn:hover{background:var(--blue);border-color:var(--blue);color:#fff}.ep-btn.watch{background:linear-gradient(135deg,var(--blue),var(--blue-glow));border-color:transparent;color:#fff;box-shadow:0 4px 15px rgba(41,98,255,0.25)}.ep-btn.download:hover{background:linear-gradient(135deg,var(--yellow),var(--yellow-glow));border-color:transparent;color:#000;box-shadow:0 4px 15px rgba(255,214,0,0.25)}.ep-btn.queued{background:rgba(255,214,0,0.15);border-color:var(--yellow);color:var(--yellow)}.back-btn{background:none;border:1px solid rgba(41,98,255,0.3);color:var(--blue);padding:8px 16px;border-radius:8px;cursor:pointer;margin-bottom:14px;font-size:12px;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:6px}.back-btn:hover{background:var(--blue);color:#fff;box-shadow:0 4px 15px rgba(41,98,255,0.25)}.anime-detail{display:flex;gap:18px;margin-bottom:20px}.anime-detail img{width:160px;height:240px;object-fit:cover;border-radius:var(--radius);border:1px solid rgba(41,98,255,0.2);box-shadow:0 8px 30px rgba(41,98,255,0.15)}.anime-detail-info{flex:1;min-width:0}.anime-detail-info h1{font-size:22px;color:var(--silver-light);margin-bottom:8px;text-shadow:0 0 20px rgba(176,190,197,0.15)}.anime-detail-info .meta{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.anime-detail-info .meta span{background:rgba(41,98,255,0.1);padding:4px 10px;border-radius:6px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;border:1px solid rgba(41,98,255,0.1)}.anime-detail-info p{color:var(--text-dim);line-height:1.6;font-size:12px;max-height:100px;overflow-y:auto}.mini-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;scroll-snap-type:x mandatory}.mini-row::-webkit-scrollbar{height:4px}.mini-row::-webkit-scrollbar-thumb{background:rgba(41,98,255,0.3);border-radius:2px}.mini-card{flex:0 0 110px;scroll-snap-align:start;background:var(--bg-card);border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;transition:.2s;border:1px solid rgba(41,98,255,0.1);position:relative}.mini-card:hover{border-color:rgba(41,98,255,0.3);transform:scale(1.03)}.mini-card img{width:100%;height:150px;object-fit:cover;display:block}.mini-card-title{padding:8px;font-size:10px;font-weight:600;color:var(--silver-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini-card .ep-badge{position:absolute;bottom:4px;right:4px;background:rgba(5,7,20,0.8);color:var(--yellow);padding:2px 6px;border-radius:4px;font-size:9px;font-weight:800;border:1px solid rgba(255,214,0,0.2)}.queue-panel{position:fixed;bottom:16px;right:16px;z-index:80;background:var(--bg-card);border:1px solid rgba(41,98,255,0.2);border-radius:var(--radius);width:280px;max-height:300px;box-shadow:0 10px 40px rgba(0,0,0,0.6),0 0 20px rgba(41,98,255,0.1);display:none;flex-direction:column;overflow:hidden}.queue-panel.show{display:flex}.queue-header{padding:10px 14px;background:rgba(41,98,255,0.08);border-bottom:1px solid rgba(41,98,255,0.15);display:flex;justify-content:space-between;align-items:center}.queue-header h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--silver-light)}.queue-header button{background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer}.queue-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}.queue-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(13,19,53,0.6);border-radius:8px;font-size:11px}.queue-item .q-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}.queue-item .q-status{font-size:9px;color:var(--text-dim);text-transform:uppercase}.queue-item .q-status.done{color:var(--green)}.queue-item .q-status.error{color:var(--red)}.queue-item .q-bar{height:3px;background:rgba(41,98,255,0.15);border-radius:2px;margin-top:4px;overflow:hidden}.queue-item .q-bar div{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-glow));border-radius:2px;transition:width .3s}.queue-toggle{position:fixed;bottom:16px;right:16px;z-index:81;background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:18px;cursor:pointer;box-shadow:0 4px 20px rgba(41,98,255,0.4);display:flex;align-items:center;justify-content:center;transition:.2s}.queue-toggle:hover{transform:scale(1.05)}.queue-toggle .badge{position:absolute;top:-4px;right:-4px;background:var(--yellow);color:#000;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}.loading{text-align:center;padding:35px;color:var(--text-dim)}.spinner{width:28px;height:28px;border:3px solid rgba(41,98,255,0.15);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px;box-shadow:0 0 10px rgba(41,98,255,0.2)}@keyframes spin{to{transform:rotate(360deg)}}.hidden{display:none!important}.player-box{position:relative}.player-controls-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(13,19,53,0.9);border-top:1px solid rgba(41,98,255,0.15)}.speed-select{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:6px;padding:5px 10px;color:var(--text);font-size:11px;cursor:pointer;outline:none}.speed-select:focus{border-color:var(--blue)}.keyboard-hint{font-size:10px;color:var(--text-dim);margin-left:auto;display:flex;gap:8px;align-items:center}.keyboard-hint kbd{background:rgba(41,98,255,0.15);border:1px solid rgba(41,98,255,0.2);border-radius:4px;padding:2px 6px;font-size:9px;font-family:monospace}.auto-next-overlay{position:absolute;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(5,7,20,0.95);border:1px solid rgba(41,98,255,0.3);border-radius:var(--radius);padding:16px 24px;text-align:center;z-index:10;opacity:0;pointer-events:none;transition:.4s;box-shadow:0 10px 40px rgba(0,0,0,0.6),0 0 20px rgba(41,98,255,0.1);min-width:240px}.auto-next-overlay.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}.auto-next-overlay h4{font-size:14px;color:var(--silver-light);margin-bottom:8px}.auto-next-overlay .countdown{font-size:28px;font-weight:900;color:var(--yellow);margin:8px 0}.auto-next-overlay .next-ep-title{font-size:12px;color:var(--text-dim);margin-bottom:12px}.auto-next-overlay .auto-next-btns{display:flex;gap:10px;justify-content:center}.auto-next-overlay button{padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;border:none}.auto-next-overlay .btn-play{background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;box-shadow:0 4px 15px rgba(41,98,255,0.3)}.auto-next-overlay .btn-play:hover{transform:scale(1.05)}.auto-next-overlay .btn-cancel{background:rgba(13,19,53,0.8);color:var(--text);border:1px solid rgba(41,98,255,0.2)}.auto-next-overlay .btn-cancel:hover{border-color:var(--blue)}.key-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(5,7,20,0.9);border:1px solid rgba(41,98,255,0.3);border-radius:var(--radius-sm);padding:8px 16px;color:var(--text);font-size:12px;z-index:2001;opacity:0;transition:.3s;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.5)}.key-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.pip-btn{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:8px;padding:7px 14px;color:var(--text);font-size:12px;cursor:pointer;transition:.2s;font-weight:700}.pip-btn:hover{background:var(--blue);border-color:var(--blue);color:#fff}.mini-player{position:fixed;bottom:70px;right:16px;z-index:85;width:280px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid rgba(41,98,255,0.2);overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.6),0 0 20px rgba(41,98,255,0.1);display:none;animation:miniIn .3s cubic-bezier(.4,0,.2,1)}@keyframes miniIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}.mini-player.show{display:block}.mini-player video{width:100%;height:157px;background:#000;display:block}.mini-player-info{padding:8px 12px;display:flex;justify-content:space-between;align-items:center;background:rgba(13,19,53,0.8);border-top:1px solid rgba(41,98,255,0.1)}.mini-player-info span{font-size:11px;color:var(--silver-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}.mini-player-info button{background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer;padding:2px 6px}.mini-player-info button:hover{color:var(--yellow)}.dl-progress-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,7,20,0.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1500}.dl-progress-overlay.show{display:flex}.dl-progress-box{background:var(--bg-card);border:1px solid rgba(41,98,255,0.2);border-radius:var(--radius);padding:24px;width:90%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.6)}.dl-progress-box h3{font-size:14px;color:var(--silver-light);margin-bottom:16px}.dl-progress-bar{height:6px;background:rgba(41,98,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:8px}.dl-progress-bar div{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-glow));border-radius:3px;transition:width .2s}.dl-progress-text{font-size:12px;color:var(--text-dim);display:flex;justify-content:space-between}.dl-progress-text .pct{color:var(--yellow);font-weight:700}.schedule-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px}.schedule-day{background:var(--bg-card);border-radius:var(--radius-sm);padding:10px;border:1px solid rgba(41,98,255,0.1);min-height:80px}.schedule-day.today{border-color:rgba(255,214,0,0.3);background:rgba(255,214,0,0.05)}.schedule-day h5{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;text-align:center}.schedule-day.today h5{color:var(--yellow)}.schedule-day .sch-item{font-size:9px;color:var(--text);padding:3px 5px;background:rgba(41,98,255,0.08);border-radius:4px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.schedule-day .sch-item:hover{background:rgba(41,98,255,0.15)}.schedule-day .sch-item.new{border-left:2px solid var(--yellow)}.share-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}.share-bar button{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:8px;padding:7px 14px;color:var(--text);font-size:11px;cursor:pointer;transition:.2s;font-weight:700}.share-bar button:hover{background:var(--blue);border-color:var(--blue);color:#fff}.comments-section{margin-top:20px}.comments-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;max-height:300px;overflow-y:auto}.comment-item{background:var(--bg-card);border:1px solid rgba(41,98,255,0.1);border-radius:var(--radius-sm);padding:10px 12px}.comment-item .c-name{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:2px}.comment-item .c-text{font-size:12px;color:var(--text);line-height:1.4}.comment-item .c-time{font-size:9px;color:var(--text-dim);margin-top:4px}.comment-input{display:flex;gap:8px}.comment-input input{flex:1;background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:12px;outline:none}.comment-input input:focus{border-color:var(--blue)}.comment-input button{background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;border-radius:var(--radius-sm);padding:9px 16px;color:#fff;font-weight:700;cursor:pointer;font-size:11px}.source-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(0,211,106,0.1);color:var(--green);padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(0,211,106,0.2)}.source-badge.fallback{background:rgba(255,214,0,0.1);color:var(--yellow);border-color:rgba(255,214,0,0.2)}.player-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,7,20,0.96);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}.player-box{width:100%;max-width:1000px;background:var(--bg-card);border-radius:var(--radius);overflow:hidden;border:1px solid rgba(41,98,255,0.2);box-shadow:0 20px 60px rgba(41,98,255,0.15)}.player-box video{width:100%;height:460px;background:#000;display:block}.player-header{padding:14px 18px;background:rgba(13,19,53,0.8);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(41,98,255,0.15)}.player-header h3{color:var(--silver-light);font-size:14px;font-weight:700}.player-actions{display:flex;gap:8px}.player-actions button{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:8px;padding:7px 14px;color:var(--text);font-size:12px;cursor:pointer;transition:.2s;font-weight:700}.player-actions button:hover{background:var(--blue);border-color:var(--blue);color:#fff}.player-actions button.dl:hover{background:var(--yellow);border-color:var(--yellow);color:#000;box-shadow:0 4px 15px rgba(255,214,0,0.25)}.player-close{position:absolute;top:16px;right:16px;background:rgba(239,83,80,0.9);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;transition:.2s;box-shadow:0 4px 15px rgba(239,83,80,0.3)}.player-close:active{transform:scale(.9)}.toast{position:fixed;top:66px;right:16px;background:var(--bg-card);border:1px solid rgba(41,98,255,0.3);border-radius:var(--radius-sm);padding:12px 18px;color:var(--text);font-size:13px;z-index:2000;transform:translateX(420px);transition:.4s cubic-bezier(.4,0,.2,1);box-shadow:0 10px 30px rgba(0,0,0,0.5),0 0 20px rgba(41,98,255,0.1);max-width:320px}.toast.show{transform:translateX(0)}.toast.success{border-color:rgba(255,214,0,0.4);box-shadow:0 10px 30px rgba(0,0,0,0.5),0 0 20px rgba(255,214,0,0.1)}.toast.error{border-color:rgba(239,83,80,0.4)}.ah-search-box{display:flex;gap:10px;margin:14px 0;padding:14px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid rgba(41,98,255,0.15)}.ah-search-box input{flex:1;background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:var(--radius-sm);padding:11px 13px;color:var(--text);font-size:13px;outline:none}.ah-search-box input:focus{border-color:var(--blue)}.ah-search-box button{background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;border-radius:var(--radius-sm);padding:11px 18px;color:#fff;font-weight:700;cursor:pointer;font-size:12px;box-shadow:0 4px 15px rgba(41,98,255,0.25)}.status-msg{padding:11px 14px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid rgba(41,98,255,0.15);margin-bottom:14px;font-size:12px;color:var(--text-dim)}.status-msg.ok{color:var(--yellow);border-color:rgba(255,214,0,0.3);text-shadow:0 0 8px rgba(255,214,0,0.15)}.status-msg.bad{color:var(--red);border-color:rgba(239,83,80,0.2)}.status-msg.warn{color:var(--blue);border-color:rgba(41,98,255,0.2)}select.ep-btn{background:rgba(13,19,53,0.8)!important;border:1px solid rgba(41,98,255,0.2)!important;color:var(--text)!important;appearance:none;-webkit-appearance:none;padding-right:22px!important;background-image:url(data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23b0bec5' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E)!important;background-repeat:no-repeat!important;background-position:right 6px center!important}select.ep-btn:focus{outline:none;border-color:var(--blue)!important}.empty-state{text-align:center;padding:40px 20px;color:var(--text-dim)}.empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:.3}.empty-state p{font-size:13px}@media(max-width:900px){.sidebar{transform:translateX(-100%);width:280px;min-width:280px}.sidebar.open{transform:translateX(0)}.content{margin-left:0}.menu-toggle{display:block}.anime-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}.anime-card img{height:180px}.player-box video{height:280px}.queue-panel{width:260px;right:8px;bottom:70px}}@media(max-width:600px){.header{padding:0 12px;height:50px}.logo{font-size:16px}.status-bar{gap:8px}.status-item{font-size:9px}.main{padding-top:50px}.sidebar{top:50px;width:260px;min-width:260px}.sidebar .chat-input{padding:10px;gap:6px}.sidebar .chat-input input{padding:9px 11px;font-size:12px}.sidebar .chat-input button{padding:9px 14px;font-size:11px}.content{padding:12px}.anime-grid{grid-template-columns:repeat(3,1fr);gap:8px}.anime-card img{height:150px}.anime-card-info{padding:8px}.anime-card-title{font-size:11px}.search-box{flex-direction:column;gap:8px;padding:10px}.search-box button{padding:10px 18px}.anime-detail{flex-direction:column;align-items:center;text-align:center;gap:12px}.anime-detail img{width:140px;height:200px}.anime-detail-info h1{font-size:18px}.episode-item{flex-direction:column;align-items:flex-start;gap:10px;padding:10px 12px}.ep-btns{width:100%;justify-content:flex-end}.player-box video{height:220px}.player-header{flex-direction:column;gap:8px;align-items:flex-start}.player-actions{width:100%;justify-content:flex-end}.queue-panel{width:calc(100% - 32px);right:16px;left:16px}.queue-toggle{bottom:12px;right:12px;width:44px;height:44px}.player-controls-bar{flex-wrap:wrap;gap:6px;padding:8px 12px}.keyboard-hint{display:none}.speed-select{padding:4px 8px;font-size:10px}.auto-next-overlay{min-width:200px;padding:12px 16px;bottom:50px}.auto-next-overlay .countdown{font-size:22px}}@media(max-width:400px){.anime-grid{grid-template-columns:repeat(2,1fr)}.anime-card img{height:170px}.ep-btns{flex-wrap:wrap}.mini-card{flex:0 0 90px}.mini-card img{height:120px}}.player-episodes{position:absolute;right:0;top:0;bottom:0;width:240px;background:rgba(5,7,20,0.95);border-left:1px solid rgba(41,98,255,0.2);transform:translateX(100%);transition:.3s;z-index:20;overflow-y:auto}.player-episodes.show{transform:translateX(0)}.player-episodes h4{padding:12px 14px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--silver-light);border-bottom:1px solid rgba(41,98,255,0.1)}.player-ep-item{padding:8px 14px;cursor:pointer;font-size:11px;color:var(--text);border-bottom:1px solid rgba(41,98,255,0.05);display:flex;align-items:center;gap:8px}.player-ep-item:hover{background:rgba(41,98,255,0.1)}.player-ep-item.active{background:rgba(41,98,255,0.15);color:var(--yellow)}.player-ep-item .ep-thumb{width:40px;height:30px;background:var(--bg-card2);border-radius:4px;object-fit:cover}.player-ep-toggle{position:absolute;top:50%;right:0;transform:translateY(-50%);background:rgba(5,7,20,0.8);border:1px solid rgba(41,98,255,0.2);border-right:none;border-radius:8px 0 0 8px;padding:8px 6px;color:var(--text);cursor:pointer;z-index:21}.folder-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}.folder-tab{background:rgba(13,19,53,0.6);border:1px solid rgba(41,98,255,0.1);border-radius:20px;padding:5px 14px;color:var(--text-dim);font-size:11px;cursor:pointer;transition:.2s;font-weight:600}.folder-tab:hover{border-color:rgba(41,98,255,0.3);color:var(--text)}.folder-tab.active{background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;border-color:transparent;font-weight:700;box-shadow:0 4px 12px rgba(41,98,255,0.2)}.adv-search{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}.adv-search select{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:8px;padding:7px 10px;color:var(--text);font-size:11px;outline:none}.adv-search select:focus{border-color:var(--blue)}.ep-thumb-preview{width:60px;height:40px;background:var(--bg-card2);border-radius:6px;object-fit:cover;border:1px solid rgba(41,98,255,0.1);flex-shrink:0}.key-help-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,7,20,0.9);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:3000}.key-help-overlay.show{display:flex}.key-help-box{background:var(--bg-card);border:1px solid rgba(41,98,255,0.2);border-radius:var(--radius);padding:24px;width:90%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.6)}.key-help-box h3{font-size:14px;color:var(--silver-light);margin-bottom:16px;text-align:center}.key-help-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.key-help-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)}.key-help-item kbd{background:rgba(41,98,255,0.15);border:1px solid rgba(41,98,255,0.2);border-radius:4px;padding:3px 8px;font-size:11px;font-family:monospace;min-width:40px;text-align:center}.key-help-close{background:var(--blue);border:none;border-radius:8px;padding:8px 20px;color:#fff;font-weight:700;cursor:pointer;margin-top:16px;width:100%}.error-retry{text-align:center;padding:30px 20px}.error-retry p{color:var(--text-dim);margin-bottom:16px;font-size:13px}.error-retry button{background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;border-radius:var(--radius-sm);padding:10px 24px;color:#fff;font-weight:700;cursor:pointer;font-size:12px;box-shadow:0 4px 15px rgba(41,98,255,0.25)}.settings-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,7,20,0.9);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:3000}.settings-overlay.show{display:flex}.settings-box{background:var(--bg-card);border:1px solid rgba(41,98,255,0.2);border-radius:var(--radius);width:90%;max-width:420px;max-height:80vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.6);display:flex;flex-direction:column}.settings-header{padding:16px 20px;background:rgba(41,98,255,0.08);border-bottom:1px solid rgba(41,98,255,0.15);display:flex;justify-content:space-between;align-items:center}.settings-header h3{font-size:14px;color:var(--silver-light);text-transform:uppercase;letter-spacing:1px}.settings-header button{background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer}.settings-header button:hover{color:var(--yellow)}.settings-body{flex:1;overflow-y:auto;padding:16px 20px}.settings-section{margin-bottom:20px}.settings-section h4{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}.settings-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(41,98,255,0.08)}.settings-row:last-child{border-bottom:none}.settings-row label{font-size:13px;color:var(--text)}.settings-row .desc{font-size:10px;color:var(--text-dim);margin-top:2px}.toggle-switch{position:relative;width:44px;height:24px;background:rgba(41,98,255,0.15);border-radius:12px;cursor:pointer;transition:.2s;border:1px solid rgba(41,98,255,0.2)}.toggle-switch.on{background:linear-gradient(135deg,var(--blue),var(--blue-glow));border-color:transparent}.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 2px 4px rgba(0,0,0,0.2)}.toggle-switch.on::after{left:22px}.settings-select{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px;outline:none}.settings-select:focus{border-color:var(--blue)}.settings-btn{background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);border-radius:8px;padding:8px 16px;color:var(--text);font-size:12px;cursor:pointer;transition:.2s;font-weight:700;width:100%;margin-top:4px}.settings-btn:hover{background:var(--blue);border-color:var(--blue);color:#fff}.settings-btn.danger{border-color:rgba(239,83,80,0.3);color:var(--red)}.settings-btn.danger:hover{background:var(--red);border-color:var(--red);color:#fff}.settings-btn.success{border-color:rgba(0,211,106,0.3);color:var(--green)}.settings-btn.success:hover{background:var(--green);border-color:var(--green);color:#fff}</style></head><body><div class=header><button class=menu-toggle onclick=toggleSidebar()>&#9776;</button><div class=logo>KYRO<span>AI ANIME</span></div><div class=header-right><div class=status-bar><div class=status-item><span class='status-dot off' id=dot-ah></span>Stream</div><div class=status-item><span class='status-dot off' id=dot-anilist></span>AniList</div><div class=status-item><span class='status-dot off' id=dot-groq></span>AI</div></div><button class=theme-toggle onclick=toggleSettings() title=Settings>&#9881;</button><button class=theme-toggle onclick=toggleTheme() title='Toggle theme'>&#9788;</button></div></div><div class=main><div class=sidebar id=sidebar><div class=chat-header><h2>KYRO AI</h2><p>Ask about anime, get recommendations, find episodes</p></div><div class=chat-messages id=chat-messages><div class='msg msg-ai'><strong>KYRO:</strong> Hey! Ask me anything about anime. I can recommend shows, find episodes, or help you discover new series!</div></div><div class=chat-input><input type=text id=chat-input placeholder='Ask KYRO...' onkeypress='if(event.key==='Enter')sendChat()'><button onclick=sendChat()>Send</button></div></div><div class=content id=content><div id=search-view><div class=tabs><button class='tab active' onclick=switchTab('trending') id=tab-trending>Trending</button><button class=tab onclick=switchTab('favorites') id=tab-favorites>Favorites <span id=fav-count style='font-size:10px;opacity:.6'></span></button><button class=tab onclick=switchTab('recent') id=tab-recent>Recent</button></div><div class=folder-tabs id=folder-tabs style=display:none><button class='folder-tab active' onclick=switchFolder('watching') id=folder-watching>Watching</button><button class=folder-tab onclick=switchFolder('completed') id=folder-completed>Completed</button><button class=folder-tab onclick=switchFolder('planned') id=folder-planned>Plan to Watch</button><button class=folder-tab onclick=switchFolder('dropped') id=folder-dropped>Dropped</button></div><div class=adv-search id=adv-search style=display:none><select id=filter-year onchange=applyFilters()><option value=''>All Years</option><option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option></select><select id=filter-season onchange=applyFilters()><option value=''>All Seasons</option><option>WINTER</option><option>SPRING</option><option>SUMMER</option><option>FALL</option></select><select id=filter-status onchange=applyFilters()><option value=''>All Status</option><option>RELEASING</option><option>FINISHED</option><option>NOT_YET_RELEASED</option></select><select id=filter-score onchange=applyFilters()><option value=''>Any Score</option><option>9</option><option>8</option><option>7</option><option>6</option></select></div><div class=search-wrap><div class=search-box><input type=text id=search-input placeholder='Search anime...' onkeypress='if(event.key==='Enter')doSearch()' onfocus=showSearchHistory() onblur=hideSearchHistoryDelay()><button onclick=doSearch()>Search</button></div><div class=search-history id=search-history></div></div><div class=genre-bar id=genre-bar><button class='genre-chip active' onclick=filterGenre('all')>All</button><button class=genre-chip onclick=filterGenre('Action')>Action</button><button class=genre-chip onclick=filterGenre('Adventure')>Adventure</button><button class=genre-chip onclick=filterGenre('Comedy')>Comedy</button><button class=genre-chip onclick=filterGenre('Drama')>Drama</button><button class=genre-chip onclick=filterGenre('Fantasy')>Fantasy</button><button class=genre-chip onclick=filterGenre('Horror')>Horror</button><button class=genre-chip onclick=filterGenre('Romance')>Romance</button><button class=genre-chip onclick=filterGenre('Sci-Fi')>Sci-Fi</button><button class=genre-chip onclick=filterGenre('Isekai')>Isekai</button></div><div id=recently-watched-section style=display:none><div class=section-title>Continue Watching</div><div class=mini-row id=recently-watched-row></div></div><div class=section-title>This Week</div><div class=schedule-grid id=schedule-grid></div><div class=section-title id=section-title>Trending Now</div><div class=anime-grid id=anime-grid></div></div><div id=detail-view class=hidden><button class=back-btn onclick=showSearch()>&#8592; Back</button><div class=anime-detail id=detail-content></div><div class=share-bar id=share-bar style=display:none><button onclick=shareAnime()>&#128279; Share Anime</button><button onclick=copyTitle()>&#128203; Copy Title</button></div><div id=ah-status class=status-msg style=display:none></div><div class=ah-search-box id=ah-search-box style=display:none><input type=text id=ah-search-input placeholder='Search Stream Source manually...'><button onclick=manualAhSearch()>Search Stream</button></div><div class=section-title>Episodes <span id=source-badge class=source-badge style='display:none;margin-left:8px'>Stream Source</span></div><div class=episode-list id=episode-list></div><div class=comments-section id=comments-section style=display:none><div class=section-title>Comments</div><div class=comments-list id=comments-list></div><div class=comment-input><input type=text id=comment-input placeholder='Write a comment...' onkeypress='if(event.key==='Enter')addComment()'><button onclick=addComment()>Post</button></div></div></div></div></div><button class=queue-toggle id=queue-toggle onclick=toggleQueue()>&#11015;<span class='badge hidden' id=queue-badge>0</span></button><div class=queue-panel id=queue-panel><div class=queue-header><h4>Downloads</h4><button onclick=toggleQueue()>&times;</button></div><div class=queue-list id=queue-list></div></div><div id=player-overlay class='player-overlay hidden'><button class=player-close onclick=closePlayer()>&times;</button><div class=player-box><div class=player-header><h3 id=player-title>Episode</h3><div class=player-actions><button class=dl onclick=downloadCurrent()>&#11015; Download</button><button class=pip-btn onclick=togglePiP()>&#128250; PiP</button><button onclick=shareEpisode()>&#128279; Share</button><button onclick=nextEpisode()>Next &#9654;</button></div></div><video id=video-player controls autoplay playsinline onvolumechange=saveVolume()></video><div class=player-controls-bar><select class=speed-select id=speed-select onchange=changeSpeed(this.value)><option value=0.5>0.5x</option><option value=0.75>0.75x</option><option value=1 selected>1x</option><option value=1.25>1.25x</option><option value=1.5>1.5x</option><option value=2>2x</option></select><div class=keyboard-hint><kbd>Space</kbd> Play <kbd>&larr;</kbd> -10s <kbd>&rarr;</kbd> +10s <kbd>N</kbd> Next <kbd>F</kbd> Fullscreen</div></div><button class=player-ep-toggle id=player-ep-toggle onclick=toggleEpList()>&#9664; EP</button><div class=player-episodes id=player-episodes><h4>Episodes</h4><div id=player-ep-list></div></div><div class=auto-next-overlay id=auto-next-overlay><h4>Up Next</h4><div class=countdown id=auto-next-countdown>5</div><div class=next-ep-title id=auto-next-title>Episode 2</div><div class=auto-next-btns><button class=btn-play onclick=autoNextPlay()>Play Now</button><button class=btn-cancel onclick=autoNextCancel()>Cancel</button></div></div></div></div><div class=mini-player id=mini-player><video id=mini-video playsinline></video><div class=mini-player-info><span id=mini-title>Episode</span><button onclick=miniPlayerBack() title='Back to player'>&#9650;</button><button onclick=closeMiniPlayer() title=Close>&times;</button></div></div><div class=dl-progress-overlay id=dl-progress-overlay><div class=dl-progress-box><h3 id=dl-progress-title>Downloading...</h3><div class=dl-progress-bar><div id=dl-progress-fill style='width:0%'></div></div><div class=dl-progress-text><span id=dl-progress-size>0 MB / 0 MB</span><span class=pct id=dl-progress-pct>0%</span></div></div></div><div id=toast class=toast></div><div id=key-toast class=key-toast></div><div class=key-help-overlay id=key-help-overlay onclick='if(event.target===this)toggleKeyHelp()'><div class=key-help-box><h3>Keyboard Shortcuts</h3><div class=key-help-grid><div class=key-help-item><kbd>Space</kbd> Play / Pause</div><div class=key-help-item><kbd>&larr;</kbd> -10 seconds</div><div class=key-help-item><kbd>&rarr;</kbd> +10 seconds</div><div class=key-help-item><kbd>&uarr;</kbd> Volume up</div><div class=key-help-item><kbd>&darr;</kbd> Volume down</div><div class=key-help-item><kbd>N</kbd> Next episode</div><div class=key-help-item><kbd>F</kbd> Fullscreen</div><div class=key-help-item><kbd>M</kbd> Mute / Unmute</div><div class=key-help-item><kbd>S</kbd> Change speed</div><div class=key-help-item><kbd>P</kbd> Picture-in-Picture</div><div class=key-help-item><kbd>?</kbd> This help</div><div class=key-help-item><kbd>Esc</kbd> Close player</div></div><button class=key-help-close onclick=toggleKeyHelp()>Close</button></div></div><div class=settings-overlay id=settings-overlay onclick='if(event.target===this)toggleSettings()'><div class=settings-box><div class=settings-header><h3>Settings</h3><button onclick=toggleSettings()>&times;</button></div><div class=settings-body><div class=settings-section><h4>Player</h4><div class=settings-row><div><label>Auto-play next episode</label><div class=desc>Automatically play the next episode when one ends</div></div><div class='toggle-switch on' id=setting-autoplay onclick=toggleSetting('autoplay')></div></div><div class=settings-row><div><label>Remember playback speed</label><div class=desc>Save your last speed setting</div></div><div class='toggle-switch on' id=setting-rememberspeed onclick=toggleSetting('rememberspeed')></div></div><div class=settings-row><div><label>Default quality</label><div class=desc>Preferred download quality</div></div><select class=settings-select id=setting-quality onchange='saveSetting('quality',this.value)'><option value=original>Original</option><option value=720p>720p</option><option value=480p>480p</option><option value=360p>360p</option></select></div></div><div class=settings-section><h4>Interface</h4><div class=settings-row><div><label>Theme</label><div class=desc>Choose your preferred theme</div></div><select class=settings-select id=setting-theme onchange='saveSetting('theme',this.value);applyTheme(this.value)'><option value=dark>Dark</option><option value=light>Light</option><option value=system>System</option></select></div><div class=settings-row><div><label>Keyboard hints</label><div class=desc>Show toast when using shortcuts</div></div><div class='toggle-switch on' id=setting-keyhints onclick=toggleSetting('keyhints')></div></div></div><div class=settings-section><h4>Data</h4><button class='settings-btn success' onclick=exportData()>&#128190; Export Data</button><button class=settings-btn onclick=importData()>&#128194; Import Data</button><input type=file id=import-file style=display:none onchange=handleImport(event)><button class='settings-btn danger' onclick=clearAllData()>&#128465; Clear All Data</button></div></div></div></div><script>
-// ===== KYRO AI Anime - Fixed v3 =====
-const LS={get:(k,d)=>{try{let v=localStorage.getItem('kyro_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>localStorage.setItem('kyro_'+k,JSON.stringify(v)),remove:k=>localStorage.removeItem('kyro_'+k)};
-let currentAnime=null,currentEpisodes=[],currentEpIndex=0,currentStreamUrl='',currentTab='trending',currentGenre='all',currentFolder='watching',currentFilterResults=[],searchHistory=LS.get('search_history',[]),favorites=LS.get('favorites',[]),recent=LS.get('recent',[]),queue=LS.get('queue',[]),comments=LS.get('comments',{}),scheduleData=LS.get('schedule',[]),scheduleLastFetch=LS.get('schedule_last',0),autoNextTimer=null,autoNextCount=5,miniPlayerActive=false,keyHintTimer=null;
-
-function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
-function showKeyHint(msg){const k=document.getElementById('key-toast');k.textContent=msg;k.classList.add('show');clearTimeout(keyHintTimer);keyHintTimer=setTimeout(()=>k.classList.remove('show'),1200)}
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed')}
-function toggleTheme(){document.body.classList.toggle('light');LS.set('theme',document.body.classList.contains('light')?'light':'dark')}
-
-// ===== SETTINGS =====
-function toggleSettings(){document.getElementById('settings-overlay').classList.toggle('show');loadSettings()}
-function toggleSetting(key){const el=document.getElementById('setting-'+key);const isOn=el.classList.toggle('on');LS.set('setting_'+key,isOn);if(key==='autoplay'){if(isOn)setupAutoNext();else{const v=document.getElementById('video-player');if(v)v.onended=onVideoEnded}}}
-function saveSetting(key,val){LS.set('setting_'+key,val)}
-function loadSettings(){
-  const autoplay=LS.get('setting_autoplay',true);document.getElementById('setting-autoplay').classList.toggle('on',autoplay);
-  const remember=LS.get('setting_rememberspeed',true);document.getElementById('setting-rememberspeed').classList.toggle('on',remember);
-  const quality=LS.get('setting_quality','original');document.getElementById('setting-quality').value=quality;
-  const theme=LS.get('setting_theme','dark');document.getElementById('setting-theme').value=theme;
-  const hints=LS.get('setting_keyhints',true);document.getElementById('setting-keyhints').classList.toggle('on',hints);
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content=width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no><title>KYRO AI Anime</title><style>*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg-deep:#050714;--bg-card:#0a0f2e;--bg-card2:#0d1335;--border:#1a237e;
+  --blue:#2962ff;--blue-glow:#448aff;--silver:#b0bec5;--silver-light:#eceff1;
+  --yellow:#ffd600;--yellow-glow:#ffea00;--text:#e3f2fd;--text-dim:#90a4ae;
+  --radius:16px;--radius-sm:10px;--red:#ef5350;--green:#00d26a;
 }
-function applyTheme(theme){if(theme==='light')document.body.classList.add('light');else if(theme==='dark')document.body.classList.remove('light');else{const prefersDark=window.matchMedia('(prefers-color-scheme:dark)').matches;if(prefersDark)document.body.classList.remove('light');else document.body.classList.add('light')}}
-function exportData(){const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('kyro_'))data[k]=localStorage.getItem(k)}const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='kyro-backup.json';a.click();URL.revokeObjectURL(url);showToast('Data exported!','success')}
-function importData(){document.getElementById('import-file').click()}
-function handleImport(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const data=JSON.parse(ev.target.result);Object.entries(data).forEach(([k,v])=>localStorage.setItem(k,v));showToast('Data imported!','success')}catch(err){showToast('Invalid backup file','error')}};reader.readAsText(file)}
-function clearAllData(){if(confirm('Clear ALL data? This cannot be undone!')){Object.keys(localStorage).filter(k=>k.startsWith('kyro_')).forEach(k=>localStorage.removeItem(k));showToast('All data cleared','success');location.reload()}}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg-deep);color:var(--text);min-height:100vh;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 0%,rgba(41,98,255,0.12) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 100%,rgba(255,214,0,0.08) 0%,transparent 50%),
+    radial-gradient(ellipse at 50% 50%,rgba(176,190,197,0.04) 0%,transparent 70%);
+}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px}
 
-// ===== CHAT =====
-async function sendChat(){const input=document.getElementById('chat-input');const msg=input.value.trim();if(!msg)return;input.value='';const msgs=document.getElementById('chat-messages');msgs.innerHTML+='<div class="msg msg-user">'+escapeHtml(msg)+'<div class="msg-time">Just now</div></div>';msgs.scrollTop=msgs.scrollHeight;try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:msg}]})});const data=await r.json();msgs.innerHTML+='<div class="msg msg-ai"><strong>KYRO:</strong> '+escapeHtml(data.reply||'No response')+'<div class="msg-time">Just now</div></div>';msgs.scrollTop=msgs.scrollHeight}catch(e){msgs.innerHTML+='<div class="msg msg-ai"><strong>KYRO:</strong> Error: '+escapeHtml(e.message)+'</div>';msgs.scrollTop=msgs.scrollHeight}}
-function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+/* ===== HEADER ===== */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:100;height:56px;
+  background:rgba(5,7,20,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(41,98,255,0.25);
+  display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+}
+.logo{
+  font-size:20px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(135deg,var(--blue) 0%,var(--silver-light) 50%,var(--yellow) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.logo span{font-weight:300;opacity:0.7}
+.header-right{display:flex;align-items:center;gap:12px}
+.status-bar{display:flex;gap:12px;align-items:center}
+.status-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
+.status-dot{width:7px;height:7px;border-radius:50%;transition:.3s}
+.status-dot.on{background:var(--yellow);box-shadow:0 0 10px var(--yellow-glow)}
+.status-dot.off{background:#37474f}
 
-// ===== SEARCH =====
-function doSearch(){const q=document.getElementById('search-input').value.trim();if(!q)return;addSearchHistory(q);loadAnime('/api/search?q='+encodeURIComponent(q),q)}
-function addSearchHistory(q){if(!searchHistory.includes(q)){searchHistory.unshift(q);if(searchHistory.length>10)searchHistory.pop();LS.set('search_history',searchHistory)}}
-function showSearchHistory(){const h=document.getElementById('search-history');if(!searchHistory.length)return;h.innerHTML=searchHistory.map(s=>'<div class="search-history-item" onclick="document.getElementById('search-input').value=''+s.replace(/'/g,"\'")+'';doSearch();hideSearchHistory()">'+escapeHtml(s)+'</div>').join('');h.classList.add('show')}
-function hideSearchHistory(){document.getElementById('search-history').classList.remove('show')}
-function hideSearchHistoryDelay(){setTimeout(hideSearchHistory,200)}
+/* Theme toggle */
+.theme-toggle{
+  background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:50%;width:32px;height:32px;color:var(--yellow);
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:.2s;
+}
+.theme-toggle:hover{border-color:var(--yellow);box-shadow:0 0 12px rgba(255,214,0,0.2)}
 
-// ===== TABS & FOLDERS =====
-function switchTab(tab){currentTab=tab;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');const ft=document.getElementById('folder-tabs');const adv=document.getElementById('adv-search');if(tab==='favorites'){ft.style.display='flex';adv.style.display='flex';renderFavorites()}else if(tab==='recent'){ft.style.display='none';adv.style.display='none';renderRecent()}else{ft.style.display='none';adv.style.display='none';loadTrending()}}
-function switchFolder(folder){currentFolder=folder;document.querySelectorAll('.folder-tab').forEach(t=>t.classList.remove('active'));document.getElementById('folder-'+folder).classList.add('active');if(currentTab==='favorites')renderFavorites();else renderRecent()}
+/* Mobile menu */
+.menu-toggle{
+  display:none;background:none;border:none;color:var(--silver);font-size:22px;
+  cursor:pointer;padding:4px 8px;
+}
 
-// ===== ANIME LOADING =====
-async function loadTrending(){document.getElementById('section-title').textContent='Trending Now';document.getElementById('anime-grid').innerHTML='<div class="loading"><div class="spinner"></div>Loading trending...</div>';try{const r=await fetch('/api/search?q=');const data=await r.json();renderGrid(data.results||[])}catch(e){showToast('Error loading trending: '+e.message,'error')}}
-async function loadAnime(url,title){document.getElementById('section-title').textContent=title||'Search Results';document.getElementById('anime-grid').innerHTML='<div class="loading"><div class="spinner"></div>Searching...</div>';try{const r=await fetch(url);const data=await r.json();currentFilterResults=data.results||[];applyFilters()}catch(e){document.getElementById('anime-grid').innerHTML='<div class="error-retry"><p>Error: '+escapeHtml(e.message)+'</p><button onclick="doSearch()">Retry</button></div>'}}
+/* ===== MAIN LAYOUT ===== */
+.main{display:flex;min-height:100vh;padding-top:56px}
 
-function renderGrid(animeList){const g=document.getElementById('anime-grid');if(!animeList.length){g.innerHTML='<div class="empty-state"><p>No anime found.</p></div>';return}g.innerHTML=animeList.map(a=>`<div class="anime-card" onclick="openAnime(${a.id})"><img src="${a.image||''}" alt="${escapeHtml(a.title||'')}" loading="lazy"><div class="score-badge">${a.score||'?'}</div><button class="heart-btn ${isFav(a.id)?'liked':''}" onclick="event.stopPropagation();toggleFav(${a.id},'${(a.title||'').replace(/'/g,"\'")}','${(a.image||'').replace(/'/g,"\'")}')">${isFav(a.id)?'&#10084;':'&#9825;'}</button><div class="anime-card-info"><div class="anime-card-title">${escapeHtml(a.title||'')}</div><div class="anime-card-meta"><span>${a.episodes||'?'} EP</span><span>${a.year||'?'}</span><span>${(a.genres||[]).slice(0,2).join(', ')}</span></div></div></div>`).join('')}
+/* ===== SIDEBAR ===== */
+.sidebar{
+  width:320px;min-width:320px;
+  background:rgba(10,15,46,0.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-right:1px solid rgba(41,98,255,0.15);
+  display:flex;flex-direction:column;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  position:fixed;left:0;top:56px;bottom:0;z-index:90;
+}
+.sidebar.collapsed{transform:translateX(-100%)}
+.chat-header{
+  padding:14px 16px;border-bottom:1px solid rgba(41,98,255,0.15);
+  background:rgba(41,98,255,0.06);
+}
+.chat-header h2{
+  font-size:14px;letter-spacing:2px;text-transform:uppercase;
+  background:linear-gradient(90deg,var(--blue),var(--silver-light));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.chat-header p{font-size:10px;color:var(--text-dim);margin-top:3px}
+.chat-messages{
+  flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;
+}
+.msg{
+  max-width:92%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.5;
+  word-break:break-word;animation:msgIn .35s cubic-bezier(.4,0,.2,1);
+}
+@keyframes msgIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.msg-user{align-self:flex-end;
+  background:linear-gradient(135deg,rgba(41,98,255,0.25),rgba(41,98,255,0.1));
+  border:1px solid rgba(41,98,255,0.3);color:var(--silver-light);border-bottom-right-radius:4px;
+}
+.msg-ai{align-self:flex-start;background:rgba(13,19,53,0.8);
+  border:1px solid rgba(176,190,197,0.12);color:var(--text);border-bottom-left-radius:4px;
+}
+.msg-ai strong{color:var(--yellow);font-weight:700}
+.msg-time{font-size:9px;color:var(--text-dim);margin-top:4px;opacity:.6}
+.chat-input{display:flex;padding:12px;gap:8px;border-top:1px solid rgba(41,98,255,0.15);background:rgba(5,7,20,0.5)}
+.chat-input input{
+  flex:1;background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-size:13px;outline:none;transition:.2s;
+}
+.chat-input input:focus{border-color:var(--blue);box-shadow:0 0 12px rgba(41,98,255,0.15)}
+.chat-input input::placeholder{color:var(--text-dim)}
+.chat-input button{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;
+  border-radius:var(--radius-sm);padding:10px 18px;color:#fff;font-weight:700;
+  cursor:pointer;transition:.2s;font-size:12px;text-transform:uppercase;letter-spacing:1px;
+  box-shadow:0 4px 15px rgba(41,98,255,0.3);
+}
+.chat-input button:active{transform:scale(.96)}
 
-function applyFilters(){let results=[...currentFilterResults];const year=document.getElementById('filter-year').value;if(year)results=results.filter(a=>a.year==parseInt(year));const status=document.getElementById('filter-status').value;if(status)results=results.filter(a=>a.status===status);const score=document.getElementById('filter-score').value;if(score)results=results.filter(a=>(a.score||0)>=parseInt(score));if(currentGenre!=='all')results=results.filter(a=>(a.genres||[]).includes(currentGenre));renderGrid(results)}
-function filterGenre(g){currentGenre=g;document.querySelectorAll('.genre-chip').forEach(c=>c.classList.remove('active'));event.target.classList.add('active');if(currentTab==='trending')loadTrending();else applyFilters()}
+/* ===== CONTENT ===== */
+.content{flex:1;margin-left:320px;overflow-y:auto;padding:18px;min-height:calc(100vh - 56px)}
 
-// ===== FAVORITES & RECENT =====
-function isFav(id){return favorites.some(f=>f.id===id)}
-function toggleFav(id,title,image){if(isFav(id)){favorites=favorites.filter(f=>f.id!==id);showToast('Removed from favorites')}else{favorites.push({id,title,image,folder:currentFolder,added:Date.now()});showToast('Added to favorites','success')}LS.set('favorites',favorites);updateFavCount();if(currentTab==='favorites')renderFavorites()}
-function updateFavCount(){document.getElementById('fav-count').textContent='('+favorites.length+')'}
-function renderFavorites(){const filtered=favorites.filter(f=>f.folder===currentFolder);renderGrid(filtered.map(f=>({id:f.id,title:f.title,image:f.image,score:'',episodes:'',year:'',genres:[]})))}
-function addRecent(anime,epIndex){recent=recent.filter(r=>r.id!==anime.id);recent.unshift({id:anime.id,title:anime.title_english||anime.title,image:anime.image,epIndex,episodes:anime.episodes,added:Date.now()});if(recent.length>20)recent.pop();LS.set('recent',recent);renderRecentlyWatched()}
-function renderRecent(){renderGrid(recent.map(r=>({id:r.id,title:r.title,image:r.image,score:'',episodes:r.episodes,year:'',genres:[]})))}
-function renderRecentlyWatched(){const row=document.getElementById('recently-watched-row');const sec=document.getElementById('recently-watched-section');if(!recent.length){sec.style.display='none';return}sec.style.display='block';row.innerHTML=recent.slice(0,10).map(r=>`<div class="mini-card" onclick="openAnime(${r.id})"><img src="${r.image||''}" alt="${escapeHtml(r.title||'')}" loading="lazy"><div class="ep-badge">EP ${(r.epIndex||0)+1}</div><div class="mini-card-title">${escapeHtml(r.title||'')}</div></div>`).join('')}
+/* ===== TABS ===== */
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab{
+  background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.15);
+  border-radius:var(--radius-sm);padding:8px 16px;color:var(--text-dim);
+  font-size:12px;font-weight:700;cursor:pointer;transition:.2s;text-transform:uppercase;letter-spacing:1px;
+}
+.tab:hover{border-color:rgba(41,98,255,0.3);color:var(--text)}
+.tab.active{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;
+  border-color:transparent;box-shadow:0 4px 15px rgba(41,98,255,0.25);
+}
 
-// ===== DETAIL VIEW =====
-async function openAnime(id){try{const r=await fetch('/api/anime/'+id);const anime=await r.json();if(anime.error){showToast('Error: '+anime.error,'error');return}currentAnime=anime;document.getElementById('search-view').classList.add('hidden');document.getElementById('detail-view').classList.remove('hidden');document.getElementById('share-bar').style.display='flex';document.getElementById('comments-section').style.display='block';renderDetail(anime);await findStreamSourceEpisodes(anime)}catch(e){showToast('Error loading anime: '+e.message,'error')}}
-function renderDetail(anime){const d=document.getElementById('detail-content');d.innerHTML=`<img src="${anime.image||''}" alt="${escapeHtml(anime.title||'')}"><div class="anime-detail-info"><h1>${escapeHtml(anime.title_english||anime.title||'')}</h1><div class="meta"><span>${anime.episodes||'?'} Episodes</span><span>Score: ${anime.score||'?'}</span><span>${anime.year||'?'}</span><span>${anime.status||''}</span><span>${(anime.genres||[]).join(', ')}</span></div><p>${escapeHtml(anime.synopsis||'No synopsis available.')}</p></div>`;renderComments(anime.id)}
+/* ===== SEARCH ===== */
+.search-wrap{position:relative;max-width:560px;margin-bottom:20px}
+.search-box{
+  display:flex;gap:10px;background:rgba(10,15,46,0.6);
+  padding:6px;border-radius:var(--radius);border:1px solid rgba(41,98,255,0.15);
+}
+.search-box input{flex:1;background:transparent;border:none;padding:12px 14px;color:var(--text);font-size:14px;outline:none}
+.search-box input::placeholder{color:var(--text-dim)}
+.search-box button{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;
+  border-radius:var(--radius-sm);padding:12px 24px;color:#fff;font-weight:700;font-size:13px;
+  cursor:pointer;text-transform:uppercase;letter-spacing:1px;box-shadow:0 4px 15px rgba(41,98,255,0.25);transition:.2s;
+}
+.search-box button:active{transform:scale(.96)}
+.search-history{
+  position:absolute;top:100%;left:0;right:0;z-index:50;
+  background:var(--bg-card);border:1px solid rgba(41,98,255,0.2);
+  border-radius:var(--radius-sm);margin-top:6px;overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);display:none;
+}
+.search-history.show{display:block}
+.search-history-item{
+  padding:10px 14px;font-size:13px;color:var(--text-dim);cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:.15s;
+}
+.search-history-item:hover{background:rgba(41,98,255,0.1);color:var(--text)}
+.search-history-item svg{width:14px;height:14px;opacity:.5}
 
-// ===== STREAM SOURCE EPISODES =====
-async function findStreamSourceEpisodes(anime){const status=document.getElementById('ah-status');const epList=document.getElementById('episode-list');const badge=document.getElementById('source-badge');status.style.display='block';status.textContent='Searching Stream Source...';status.className='status-msg';try{const r=await fetch('/api/stream/search?q='+encodeURIComponent(anime.title_english||anime.title));const data=await r.json();if(data.results&&data.results.length>0){const best=data.results[0];status.innerHTML='Found on <strong>Stream Source</strong>: '+escapeHtml(best.title);status.className='status-msg ok';badge.style.display='inline-flex';const epR=await fetch('/api/stream/episodes/'+encodeURIComponent(best.id));const epData=await epR.json();currentEpisodes=epData.episodes||[];renderEpisodes(currentEpisodes,anime)}else{status.textContent='Not found on Stream Source. Try manual search below.';status.className='status-msg warn';document.getElementById('ah-search-box').style.display='flex';currentEpisodes=[];renderEpisodes([],anime)}}catch(e){status.textContent='Stream Source error: '+e.message;status.className='status-msg bad';document.getElementById('ah-search-box').style.display='flex';currentEpisodes=[];renderEpisodes([],anime)}}
-async function manualAhSearch(){const q=document.getElementById('ah-search-input').value.trim();if(!q)return;const status=document.getElementById('ah-status');status.style.display='block';status.textContent='Searching Stream Source...';try{const r=await fetch('/api/stream/search?q='+encodeURIComponent(q));const data=await r.json();if(data.results&&data.results.length>0){const best=data.results[0];const epR=await fetch('/api/stream/episodes/'+encodeURIComponent(best.id));const epData=await epR.json();currentEpisodes=epData.episodes||[];renderEpisodes(currentEpisodes,currentAnime);status.innerHTML='Found: '+escapeHtml(best.title);status.className='status-msg ok'}else{status.textContent='No results found.';status.className='status-msg bad'}}catch(e){status.textContent='Error: '+e.message;status.className='status-msg bad'}}
+/* ===== GENRE FILTER ===== */
+.genre-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.genre-chip{
+  background:rgba(13,19,53,0.6);border:1px solid rgba(41,98,255,0.12);
+  border-radius:20px;padding:5px 14px;color:var(--text-dim);font-size:11px;
+  cursor:pointer;transition:.2s;font-weight:600;
+}
+.genre-chip:hover{border-color:rgba(41,98,255,0.3);color:var(--text)}
+.genre-chip.active{
+  background:linear-gradient(135deg,var(--yellow),var(--yellow-glow));color:#000;
+  border-color:transparent;font-weight:800;box-shadow:0 4px 12px rgba(255,214,0,0.2);
+}
 
-function renderEpisodes(eps,anime){const el=document.getElementById('episode-list');if(!eps.length){el.innerHTML='<div class="empty-state"><p>No episodes found. Try manual search above.</p></div>';return}const progress=LS.get('progress',{});el.innerHTML=eps.map((ep,i)=>{const saved=progress[anime.id+'_'+i];const savedTime=saved?formatTime(saved.time):'';return `<div class="episode-item"><div class="episode-item-left"><div class="ep-num">${ep.number||i+1}</div><div class="ep-info"><div class="ep-title">${escapeHtml(ep.title||'Episode '+(i+1))}</div><div class="ep-sub ok">Stream Source</div>${savedTime?'<div class="ep-progress">Resumes at '+savedTime+'</div>':''}</div></div><div class="ep-btns"><button class="ep-btn watch" onclick="playEpisode(${i})">&#9654; Watch</button><button class="ep-btn download ${isQueued(ep.hash)?'queued':''}" onclick="queueDownload('${ep.hash}','${escapeHtml((anime.title_english||anime.title||'episode').replace(/'/g,"\'"))}_EP${ep.number||i+1}.mp4',${i})">${isQueued(ep.hash)?'Queued':'&#11015; Download'}</button></div></div>`}).join('')}
-function isQueued(hash){return queue.some(q=>q.hash===hash)}
-function formatTime(s){if(!s||s<1)return'';const m=Math.floor(s/60);const sec=Math.floor(s%60);return m+':'+(sec<10?'0':'')+sec}
+/* ===== SECTION TITLE ===== */
+.section-title{
+  font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;
+  text-transform:uppercase;letter-spacing:1.5px;
+  background:linear-gradient(90deg,var(--silver-light),var(--yellow));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.section-title::before{
+  content:'';width:4px;height:18px;
+  background:linear-gradient(180deg,var(--blue),var(--yellow));border-radius:2px;
+  box-shadow:0 0 10px rgba(41,98,255,0.4);
+}
 
-// ===== PLAYER - MERGED (no overrides) =====
+/* ===== ANIME GRID ===== */
+.anime-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.anime-card{
+  background:var(--bg-card);border-radius:var(--radius);overflow:hidden;cursor:pointer;
+  transition:.35s cubic-bezier(.4,0,.2,1);border:1px solid rgba(41,98,255,0.1);position:relative;
+}
+.anime-card:hover{
+  transform:translateY(-5px) scale(1.02);border-color:rgba(41,98,255,0.4);
+  box-shadow:0 12px 40px rgba(41,98,255,0.15),0 0 20px rgba(41,98,255,0.08);
+}
+.anime-card img{width:100%;height:210px;object-fit:cover;display:block}
+.anime-card-info{padding:11px;position:relative}
+.anime-card-title{font-size:12px;font-weight:700;color:var(--silver-light);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.anime-card-meta{font-size:9px;color:var(--text-dim);display:flex;gap:5px;flex-wrap:wrap}
+.anime-card-meta span{background:rgba(41,98,255,0.1);padding:2px 7px;border-radius:4px;border:1px solid rgba(41,98,255,0.08)}
+.score-badge{
+  position:absolute;top:8px;right:8px;
+  background:linear-gradient(135deg,var(--yellow),var(--yellow-glow));color:#000;
+  padding:3px 9px;border-radius:20px;font-size:10px;font-weight:900;
+  box-shadow:0 2px 10px rgba(255,214,0,0.3);
+}
+.heart-btn{
+  position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;
+  background:rgba(5,7,20,0.7);border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-dim);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:.2s;z-index:5;
+}
+.heart-btn:hover{background:rgba(239,83,80,0.8);color:#fff;border-color:transparent}
+.heart-btn.liked{background:rgba(239,83,80,0.9);color:#fff;border-color:transparent;box-shadow:0 0 12px rgba(239,83,80,0.4)}
+
+/* ===== EPISODES ===== */
+.episode-list{display:flex;flex-direction:column;gap:8px}
+.episode-item{
+  background:var(--bg-card);border:1px solid rgba(41,98,255,0.1);
+  border-radius:var(--radius-sm);padding:12px 14px;
+  display:flex;justify-content:space-between;align-items:center;transition:.2s;
+}
+.episode-item:hover{border-color:rgba(41,98,255,0.3);background:var(--bg-card2);box-shadow:0 4px 20px rgba(41,98,255,0.08)}
+.episode-item-left{display:flex;align-items:center;gap:12px}
+.ep-num{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;
+  font-weight:800;width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  box-shadow:0 0 15px rgba(41,98,255,0.3);flex-shrink:0;
+}
+.ep-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ep-title{font-size:13px;font-weight:700;color:var(--silver-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep-sub{font-size:10px;color:var(--text-dim)}
+.ep-sub.ok{color:var(--yellow);text-shadow:0 0 8px rgba(255,214,0,0.3)}
+.ep-sub.bad{color:var(--red)}
+.ep-progress{font-size:9px;color:var(--blue);margin-top:2px}
+.ep-btns{display:flex;gap:6px;flex-shrink:0}
+.ep-btn{
+  background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:8px;padding:6px 14px;color:var(--text);font-size:11px;
+  cursor:pointer;transition:.2s;font-weight:700;white-space:nowrap;
+}
+.ep-btn:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.ep-btn.watch{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));
+  border-color:transparent;color:#fff;box-shadow:0 4px 15px rgba(41,98,255,0.25);
+}
+.ep-btn.download:hover{
+  background:linear-gradient(135deg,var(--yellow),var(--yellow-glow));
+  border-color:transparent;color:#000;box-shadow:0 4px 15px rgba(255,214,0,0.25);
+}
+.ep-btn.queued{
+  background:rgba(255,214,0,0.15);border-color:var(--yellow);color:var(--yellow);
+}
+
+/* ===== DETAIL VIEW ===== */
+.back-btn{
+  background:none;border:1px solid rgba(41,98,255,0.3);color:var(--blue);
+  padding:8px 16px;border-radius:8px;cursor:pointer;margin-bottom:14px;
+  font-size:12px;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:6px;
+}
+.back-btn:hover{background:var(--blue);color:#fff;box-shadow:0 4px 15px rgba(41,98,255,0.25)}
+.anime-detail{display:flex;gap:18px;margin-bottom:20px}
+.anime-detail img{
+  width:160px;height:240px;object-fit:cover;border-radius:var(--radius);
+  border:1px solid rgba(41,98,255,0.2);box-shadow:0 8px 30px rgba(41,98,255,0.15);
+}
+.anime-detail-info{flex:1;min-width:0}
+.anime-detail-info h1{font-size:22px;color:var(--silver-light);margin-bottom:8px;text-shadow:0 0 20px rgba(176,190,197,0.15)}
+.anime-detail-info .meta{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.anime-detail-info .meta span{
+  background:rgba(41,98,255,0.1);padding:4px 10px;border-radius:6px;
+  font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;
+  border:1px solid rgba(41,98,255,0.1);
+}
+.anime-detail-info p{color:var(--text-dim);line-height:1.6;font-size:12px;max-height:100px;overflow-y:auto}
+
+/* ===== FAVORITES / RECENTLY WATCHED ROW ===== */
+.mini-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;scroll-snap-type:x mandatory}
+.mini-row::-webkit-scrollbar{height:4px}
+.mini-row::-webkit-scrollbar-thumb{background:rgba(41,98,255,0.3);border-radius:2px}
+.mini-card{
+  flex:0 0 110px;scroll-snap-align:start;
+  background:var(--bg-card);border-radius:var(--radius-sm);overflow:hidden;
+  cursor:pointer;transition:.2s;border:1px solid rgba(41,98,255,0.1);position:relative;
+}
+.mini-card:hover{border-color:rgba(41,98,255,0.3);transform:scale(1.03)}
+.mini-card img{width:100%;height:150px;object-fit:cover;display:block}
+.mini-card-title{padding:8px;font-size:10px;font-weight:600;color:var(--silver-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-card .ep-badge{
+  position:absolute;bottom:4px;right:4px;
+  background:rgba(5,7,20,0.8);color:var(--yellow);padding:2px 6px;border-radius:4px;
+  font-size:9px;font-weight:800;border:1px solid rgba(255,214,0,0.2);
+}
+
+/* ===== DOWNLOAD QUEUE ===== */
+.queue-panel{
+  position:fixed;bottom:16px;right:16px;z-index:80;
+  background:var(--bg-card);border:1px solid rgba(41,98,255,0.2);
+  border-radius:var(--radius);width:280px;max-height:300px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.6),0 0 20px rgba(41,98,255,0.1);
+  display:none;flex-direction:column;overflow:hidden;
+}
+.queue-panel.show{display:flex}
+.queue-header{
+  padding:10px 14px;background:rgba(41,98,255,0.08);
+  border-bottom:1px solid rgba(41,98,255,0.15);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.queue-header h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--silver-light)}
+.queue-header button{background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer}
+.queue-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.queue-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:rgba(13,19,53,0.6);border-radius:8px;font-size:11px;
+}
+.queue-item .q-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.queue-item .q-status{font-size:9px;color:var(--text-dim);text-transform:uppercase}
+.queue-item .q-status.done{color:var(--green)}
+.queue-item .q-status.error{color:var(--red)}
+.queue-item .q-bar{height:3px;background:rgba(41,98,255,0.15);border-radius:2px;margin-top:4px;overflow:hidden}
+.queue-item .q-bar div{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-glow));border-radius:2px;transition:width .3s}
+.queue-toggle{
+  position:fixed;bottom:16px;right:16px;z-index:81;
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;
+  border:none;border-radius:50%;width:48px;height:48px;font-size:18px;
+  cursor:pointer;box-shadow:0 4px 20px rgba(41,98,255,0.4);
+  display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.queue-toggle:hover{transform:scale(1.05)}
+.queue-toggle .badge{
+  position:absolute;top:-4px;right:-4px;
+  background:var(--yellow);color:#000;font-size:10px;font-weight:900;
+  width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+}
+
+/* ===== LOADING ===== */
+.loading{text-align:center;padding:35px;color:var(--text-dim)}
+.spinner{
+  width:28px;height:28px;border:3px solid rgba(41,98,255,0.15);
+  border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;
+  margin:0 auto 10px;box-shadow:0 0 10px rgba(41,98,255,0.2);
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+
+/* ===== PLAYER ENHANCEMENTS ===== */
+.player-box{position:relative}
+.player-controls-bar{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  background:rgba(13,19,53,0.9);border-top:1px solid rgba(41,98,255,0.15);
+}
+.speed-select{
+  background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:6px;padding:5px 10px;color:var(--text);font-size:11px;
+  cursor:pointer;outline:none;
+}
+.speed-select:focus{border-color:var(--blue)}
+.keyboard-hint{
+  font-size:10px;color:var(--text-dim);margin-left:auto;
+  display:flex;gap:8px;align-items:center;
+}
+.keyboard-hint kbd{
+  background:rgba(41,98,255,0.15);border:1px solid rgba(41,98,255,0.2);
+  border-radius:4px;padding:2px 6px;font-size:9px;font-family:monospace;
+}
+
+/* Auto-next overlay */
+.auto-next-overlay{
+  position:absolute;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(5,7,20,0.95);border:1px solid rgba(41,98,255,0.3);
+  border-radius:var(--radius);padding:16px 24px;text-align:center;
+  z-index:10;opacity:0;pointer-events:none;transition:.4s;
+  box-shadow:0 10px 40px rgba(0,0,0,0.6),0 0 20px rgba(41,98,255,0.1);
+  min-width:240px;
+}
+.auto-next-overlay.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.auto-next-overlay h4{font-size:14px;color:var(--silver-light);margin-bottom:8px}
+.auto-next-overlay .countdown{font-size:28px;font-weight:900;color:var(--yellow);margin:8px 0}
+.auto-next-overlay .next-ep-title{font-size:12px;color:var(--text-dim);margin-bottom:12px}
+.auto-next-overlay .auto-next-btns{display:flex;gap:10px;justify-content:center}
+.auto-next-overlay button{
+  padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;border:none;
+}
+.auto-next-overlay .btn-play{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;
+  box-shadow:0 4px 15px rgba(41,98,255,0.3);
+}
+.auto-next-overlay .btn-play:hover{transform:scale(1.05)}
+.auto-next-overlay .btn-cancel{
+  background:rgba(13,19,53,0.8);color:var(--text);border:1px solid rgba(41,98,255,0.2);
+}
+.auto-next-overlay .btn-cancel:hover{border-color:var(--blue)}
+
+/* Keyboard shortcut toast */
+.key-toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(5,7,20,0.9);border:1px solid rgba(41,98,255,0.3);
+  border-radius:var(--radius-sm);padding:8px 16px;color:var(--text);
+  font-size:12px;z-index:2001;opacity:0;transition:.3s;pointer-events:none;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.key-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.player-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(5,7,20,0.96);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;
+}
+.player-box{
+  width:100%;max-width:1000px;background:var(--bg-card);border-radius:var(--radius);
+  overflow:hidden;border:1px solid rgba(41,98,255,0.2);
+  box-shadow:0 20px 60px rgba(41,98,255,0.15);
+}
+.player-box video{width:100%;height:460px;background:#000;display:block}
+.player-header{
+  padding:14px 18px;background:rgba(13,19,53,0.8);
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid rgba(41,98,255,0.15);
+}
+.player-header h3{color:var(--silver-light);font-size:14px;font-weight:700}
+.player-actions{display:flex;gap:8px}
+.player-actions button{
+  background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:8px;padding:7px 14px;color:var(--text);font-size:12px;
+  cursor:pointer;transition:.2s;font-weight:700;
+}
+.player-actions button:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.player-actions button.dl:hover{
+  background:var(--yellow);border-color:var(--yellow);color:#000;
+  box-shadow:0 4px 15px rgba(255,214,0,0.25);
+}
+.player-close{
+  position:absolute;top:16px;right:16px;
+  background:rgba(239,83,80,0.9);border:none;color:#fff;
+  width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;
+  transition:.2s;box-shadow:0 4px 15px rgba(239,83,80,0.3);
+}
+.player-close:active{transform:scale(.9)}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;top:66px;right:16px;background:var(--bg-card);
+  border:1px solid rgba(41,98,255,0.3);border-radius:var(--radius-sm);
+  padding:12px 18px;color:var(--text);font-size:13px;z-index:2000;
+  transform:translateX(420px);transition:.4s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 10px 30px rgba(0,0,0,0.5),0 0 20px rgba(41,98,255,0.1);max-width:320px;
+}
+.toast.show{transform:translateX(0)}
+.toast.success{border-color:rgba(255,214,0,0.4);box-shadow:0 10px 30px rgba(0,0,0,0.5),0 0 20px rgba(255,214,0,0.1)}
+.toast.error{border-color:rgba(239,83,80,0.4)}
+
+/* ===== MANUAL SEARCH ===== */
+.ah-search-box{
+  display:flex;gap:10px;margin:14px 0;padding:14px;
+  background:var(--bg-card);border-radius:var(--radius-sm);
+  border:1px solid rgba(41,98,255,0.15);
+}
+.ah-search-box input{
+  flex:1;background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:var(--radius-sm);padding:11px 13px;color:var(--text);font-size:13px;outline:none;
+}
+.ah-search-box input:focus{border-color:var(--blue)}
+.ah-search-box button{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;
+  border-radius:var(--radius-sm);padding:11px 18px;color:#fff;font-weight:700;
+  cursor:pointer;font-size:12px;box-shadow:0 4px 15px rgba(41,98,255,0.25);
+}
+.status-msg{
+  padding:11px 14px;background:var(--bg-card);border-radius:var(--radius-sm);
+  border:1px solid rgba(41,98,255,0.15);margin-bottom:14px;font-size:12px;color:var(--text-dim);
+}
+.status-msg.ok{color:var(--yellow);border-color:rgba(255,214,0,0.3);text-shadow:0 0 8px rgba(255,214,0,0.15)}
+.status-msg.bad{color:var(--red);border-color:rgba(239,83,80,0.2)}
+.status-msg.warn{color:var(--blue);border-color:rgba(41,98,255,0.2)}
+
+/* ===== QUALITY SELECTOR ===== */
+select.ep-btn{
+  background:rgba(13,19,53,0.8)!important;border:1px solid rgba(41,98,255,0.2)!important;
+  color:var(--text)!important;appearance:none;-webkit-appearance:none;
+  padding-right:22px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23b0bec5' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 6px center!important;
+}
+select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-dim)}
+.empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:.3}
+.empty-state p{font-size:13px}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);width:280px;min-width:280px}
+  .sidebar.open{transform:translateX(0)}
+  .content{margin-left:0}
+  .menu-toggle{display:block}
+  .anime-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+  .anime-card img{height:180px}
+  .player-box video{height:280px}
+  .queue-panel{width:260px;right:8px;bottom:70px}
+}
+@media(max-width:600px){
+  .header{padding:0 12px;height:50px}
+  .logo{font-size:16px}
+  .status-bar{gap:8px}
+  .status-item{font-size:9px}
+  .main{padding-top:50px}
+  .sidebar{top:50px;width:260px;min-width:260px}
+  .sidebar .chat-input{padding:10px;gap:6px}
+  .sidebar .chat-input input{padding:9px 11px;font-size:12px}
+  .sidebar .chat-input button{padding:9px 14px;font-size:11px}
+  .content{padding:12px}
+  .anime-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .anime-card img{height:150px}
+  .anime-card-info{padding:8px}
+  .anime-card-title{font-size:11px}
+  .search-box{flex-direction:column;gap:8px;padding:10px}
+  .search-box button{padding:10px 18px}
+  .anime-detail{flex-direction:column;align-items:center;text-align:center;gap:12px}
+  .anime-detail img{width:140px;height:200px}
+  .anime-detail-info h1{font-size:18px}
+  .episode-item{flex-direction:column;align-items:flex-start;gap:10px;padding:10px 12px}
+  .ep-btns{width:100%;justify-content:flex-end}
+  .player-box video{height:220px}
+  .player-header{flex-direction:column;gap:8px;align-items:flex-start}
+  .player-actions{width:100%;justify-content:flex-end}
+  .queue-panel{width:calc(100% - 32px);right:16px;left:16px}
+  .queue-toggle{bottom:12px;right:12px;width:44px;height:44px}
+  .player-controls-bar{flex-wrap:wrap;gap:6px;padding:8px 12px}
+  .keyboard-hint{display:none}
+  .speed-select{padding:4px 8px;font-size:10px}
+  .auto-next-overlay{min-width:200px;padding:12px 16px;bottom:50px}
+  .auto-next-overlay .countdown{font-size:22px}
+}
+@media(max-width:400px){
+  .anime-grid{grid-template-columns:repeat(2,1fr)}
+  .anime-card img{height:170px}
+  .ep-btns{flex-wrap:wrap}
+  .mini-card{flex:0 0 90px}
+  .mini-card img{height:120px}
+}
+</style></head>
+<body>
+<div class="header">
+  <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+  <div class="logo">KYRO<span>AI ANIME</span></div>
+  <div class="header-right">
+    <div class="status-bar">
+      <div class="status-item"><span class="status-dot off" id="dot-ah"></span>AH</div>
+      <div class="status-item"><span class="status-dot off" id="dot-anilist"></span>AniList</div>
+      <div class="status-item"><span class="status-dot off" id="dot-groq"></span>AI</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">&#9788;</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar" id="sidebar">
+    <div class="chat-header">
+      <h2>KYRO AI</h2>
+      <p>Ask about anime, get recommendations, find episodes</p>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg msg-ai"><strong>KYRO:</strong> Hey! Ask me anything about anime. I can recommend shows, find episodes, or help you discover new series!</div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chat-input" placeholder="Ask KYRO..." onkeypress="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+    <div id="search-view">
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('trending')" id="tab-trending">Trending</button>
+        <button class="tab" onclick="switchTab('favorites')" id="tab-favorites">Favorites <span id="fav-count" style="font-size:10px;opacity:.6"></span></button>
+        <button class="tab" onclick="switchTab('recent')" id="tab-recent">Recent</button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-wrap">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Search anime..." onkeypress="if(event.key==='Enter')doSearch()" onfocus="showSearchHistory()" onblur="hideSearchHistoryDelay()">
+          <button onclick="doSearch()">Search</button>
+        </div>
+        <div class="search-history" id="search-history"></div>
+      </div>
+
+      <!-- Genre filter -->
+      <div class="genre-bar" id="genre-bar">
+        <button class="genre-chip active" onclick="filterGenre('all')">All</button>
+        <button class="genre-chip" onclick="filterGenre('Action')">Action</button>
+        <button class="genre-chip" onclick="filterGenre('Adventure')">Adventure</button>
+        <button class="genre-chip" onclick="filterGenre('Comedy')">Comedy</button>
+        <button class="genre-chip" onclick="filterGenre('Drama')">Drama</button>
+        <button class="genre-chip" onclick="filterGenre('Fantasy')">Fantasy</button>
+        <button class="genre-chip" onclick="filterGenre('Horror')">Horror</button>
+        <button class="genre-chip" onclick="filterGenre('Romance')">Romance</button>
+        <button class="genre-chip" onclick="filterGenre('Sci-Fi')">Sci-Fi</button>
+        <button class="genre-chip" onclick="filterGenre('Isekai')">Isekai</button>
+      </div>
+
+      <!-- Recently watched row -->
+      <div id="recently-watched-section" style="display:none">
+        <div class="section-title">Continue Watching</div>
+        <div class="mini-row" id="recently-watched-row"></div>
+      </div>
+
+      <div class="section-title" id="section-title">Trending Now</div>
+      <div class="anime-grid" id="anime-grid"></div>
+    </div>
+
+    <div id="detail-view" class="hidden">
+      <button class="back-btn" onclick="showSearch()">&#8592; Back</button>
+      <div class="anime-detail" id="detail-content"></div>
+      <div id="ah-status" class="status-msg" style="display:none"></div>
+      <div class="ah-search-box" id="ah-search-box" style="display:none">
+        <input type="text" id="ah-search-input" placeholder="Search AnimeHeaven manually...">
+        <button onclick="manualAhSearch()">Search AH</button>
+      </div>
+      <div class="section-title">Episodes</div>
+      <div class="episode-list" id="episode-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Download Queue -->
+<button class="queue-toggle" id="queue-toggle" onclick="toggleQueue()">
+  &#11015;
+  <span class="badge hidden" id="queue-badge">0</span>
+</button>
+<div class="queue-panel" id="queue-panel">
+  <div class="queue-header">
+    <h4>Downloads</h4>
+    <button onclick="toggleQueue()">&times;</button>
+  </div>
+  <div class="queue-list" id="queue-list"></div>
+</div>
+
+<!-- Player -->
+<div id="player-overlay" class="player-overlay hidden">
+  <button class="player-close" onclick="closePlayer()">&times;</button>
+  <div class="player-box">
+    <div class="player-header">
+      <h3 id="player-title">Episode</h3>
+      <div class="player-actions">
+        <button class="dl" onclick="downloadCurrent()">&#11015; Download</button>
+        <button onclick="nextEpisode()">Next &#9654;</button>
+      </div>
+    </div>
+    <video id="video-player" controls autoplay playsinline></video>
+    <div class="player-controls-bar">
+      <select class="speed-select" id="speed-select" onchange="changeSpeed(this.value)">
+        <option value="0.5">0.5x</option>
+        <option value="0.75">0.75x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+      <div class="keyboard-hint">
+        <kbd>Space</kbd> Play <kbd>&larr;</kbd> -10s <kbd>&rarr;</kbd> +10s <kbd>N</kbd> Next <kbd>F</kbd> Fullscreen
+      </div>
+    </div>
+    <div class="auto-next-overlay" id="auto-next-overlay">
+      <h4>Up Next</h4>
+      <div class="countdown" id="auto-next-countdown">5</div>
+      <div class="next-ep-title" id="auto-next-title">Episode 2</div>
+      <div class="auto-next-btns">
+        <button class="btn-play" onclick="autoNextPlay()">Play Now</button>
+        <button class="btn-cancel" onclick="autoNextCancel()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+<div id="key-toast" class="key-toast"></div>
+
+<script>
+
+// ===== STATE =====
+let currentAnime=null,currentEpisodes=[],currentEpIndex=0,chatHistory=[],currentStreamUrl="",currentAhId="";
+let currentTab="trending",currentGenre="all",allResults=[],trendingData=[];
+
+// ===== LOCALSTORAGE HELPERS =====
+const LS={
+  get:(k,def=[])=>{try{return JSON.parse(localStorage.getItem("kyro_"+k))||def}catch(e){return def}},
+  set:(k,v)=>localStorage.setItem("kyro_"+k,JSON.stringify(v)),
+};
+
+// ===== THEME =====
+function toggleTheme(){
+  document.body.classList.toggle("light");
+  LS.set("theme",document.body.classList.contains("light")?"light":"dark");
+}
+(function initTheme(){if(LS.get("theme","dark")==="light")document.body.classList.add("light");})();
+
+// ===== FAVORITES =====
+function getFavs(){return LS.get("favorites");}
+function isFav(id){return getFavs().some(f=>f.id===id);}
+function toggleFav(anime){
+  let favs=getFavs();
+  const idx=favs.findIndex(f=>f.id===anime.id);
+  if(idx>=0){favs.splice(idx,1);showToast("Removed from favorites");}
+  else{favs.unshift({id:anime.id,title:anime.title_english||anime.title,image:anime.image,score:anime.score,episodes:anime.episodes});showToast("Added to favorites","success");}
+  LS.set("favorites",favs);
+  updateFavCount();
+  if(currentTab==="favorites")renderFavorites();
+  // Update heart buttons
+  document.querySelectorAll('.heart-btn[data-id="'+anime.id+'"]').forEach(btn=>{
+    btn.classList.toggle("liked",isFav(anime.id));
+    btn.innerHTML=isFav(anime.id)?"&#10084;":"&#9825;";
+  });
+}
+function updateFavCount(){const c=getFavs().length;document.getElementById("fav-count").textContent=c?"("+c+")":"";}
+updateFavCount();
+
+// ===== RECENTLY WATCHED =====
+function addRecent(anime,epIndex){
+  let rec=LS.get("recent");
+  rec=rec.filter(r=>r.id!==anime.id);
+  rec.unshift({id:anime.id,title:anime.title_english||anime.title,image:anime.image,epIndex:epIndex,epNumber:currentEpisodes[epIndex]?.number||"?",timestamp:Date.now()});
+  rec=rec.slice(0,15);LS.set("recent",rec);
+  renderRecentlyWatched();
+}
+function renderRecentlyWatched(){
+  const rec=LS.get("recent");
+  const sec=document.getElementById("recently-watched-section");
+  const row=document.getElementById("recently-watched-row");
+  if(!rec.length){sec.style.display="none";return;}
+  sec.style.display="block";
+  row.innerHTML=rec.map(r=>`
+    <div class="mini-card" onclick='continueWatching(${r.id},${r.epIndex})'>
+      <img src="${esc(r.image)}" onerror="this.src='https://via.placeholder.com/110x150/0a0f2e/2962ff?text=No+Image'">
+      <div class="mini-card-title">${esc(r.title)}</div>
+      <div class="ep-badge">EP ${esc(r.epNumber)}</div>
+    </div>
+  `).join("");
+}
+renderRecentlyWatched();
+
+function continueWatching(id,epIndex){
+  openAnime(id).then(()=>{
+    setTimeout(()=>{
+      if(currentEpisodes[epIndex])playEpisode(epIndex);
+      else showToast("Episode not available","error");
+    },800);
+  });
+}
+
+// ===== EPISODE PROGRESS =====
+function saveProgress(animeId,epIndex){
+  const prog=LS.get("progress",{});
+  prog[animeId]={epIndex:epIndex,epNumber:currentEpisodes[epIndex]?.number||"?",timestamp:Date.now()};
+  LS.set("progress",prog);
+}
+function getProgress(animeId){return LS.get("progress",{})[animeId];}
+
+// ===== SEARCH HISTORY =====
+function addSearchHistory(q){
+  if(!q)return;let h=LS.get("search_history");h=h.filter(x=>x!==q);h.unshift(q);h=h.slice(0,10);LS.set("search_history",h);renderSearchHistory();
+}
+function renderSearchHistory(){
+  const h=LS.get("search_history");const el=document.getElementById("search-history");
+  if(!h.length){el.classList.remove("show");return;}
+  el.innerHTML=h.map(q=>`<div class="search-history-item" onclick="searchFromHistory('${esc(q)}')">
+    <svg viewBox="0 0 16 16"><path fill="currentColor" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+    ${esc(q)}
+  </div>`).join("");
+}
+function showSearchHistory(){renderSearchHistory();document.getElementById("search-history").classList.add("show");}
+function hideSearchHistoryDelay(){setTimeout(()=>document.getElementById("search-history").classList.remove("show"),200);}
+function searchFromHistory(q){document.getElementById("search-input").value=q;doSearch();}
+
+// ===== DOWNLOAD QUEUE =====
+let downloadQueue=[];let isDownloading=false;
+function addToQueue(ep,quality){
+  const baseName=((currentAnime?.title_english||currentAnime?.title||"episode").replace(/[^a-z0-9]/gi,"_"))+"_EP"+ep.number;
+  const fname=quality==="original"?baseName+".mp4":baseName+"_"+quality+".mp4";
+  const item={id:Date.now()+Math.random(),animeId:currentAnime?.id,title:currentAnime?.title||"Unknown",epNumber:ep.number,epTitle:ep.title,filename:fname,quality:quality,hash:ep.hash,status:"queued",progress:0};
+  downloadQueue.push(item);updateQueueUI();showToast("Added to download queue","success");
+  if(!isDownloading)processQueue();
+}
+function updateQueueUI(){
+  const list=document.getElementById("queue-list");
+  const badge=document.getElementById("queue-badge");
+  const pending=downloadQueue.filter(q=>q.status==="queued"||q.status==="downloading").length;
+  badge.textContent=pending;badge.classList.toggle("hidden",!pending);
+  if(!downloadQueue.length){list.innerHTML='<div style="text-align:center;padding:20px;color:#666;font-size:12px">No downloads</div>';return;}
+  list.innerHTML=downloadQueue.slice().reverse().map(q=>`
+    <div class="queue-item">
+      <div style="flex:1">
+        <div class="q-name">${esc(q.title)} - EP${esc(q.epNumber)} (${esc(q.quality)})</div>
+        <div class="q-bar"><div style="width:${q.progress}%"></div></div>
+      </div>
+      <div class="q-status ${q.status}">${q.status}</div>
+    </div>
+  `).join("");
+}
+async function processQueue(){
+  if(isDownloading||!downloadQueue.some(q=>q.status==="queued"))return;
+  isDownloading=true;updateQueueUI();
+  const item=downloadQueue.find(q=>q.status==="queued");
+  if(!item){isDownloading=false;return;}
+  item.status="downloading";updateQueueUI();
+  try{
+    const r=await fetch("/api/stream/"+item.hash);
+    const data=await r.json();
+    if(data.url){
+      // Simulate progress
+      let prog=0;const interval=setInterval(()=>{prog+=Math.random()*15;if(prog>90)prog=90;item.progress=Math.floor(prog);updateQueueUI();},500);
+      // Start actual download
+      const a=document.createElement("a");
+      a.href="/api/download?url="+encodeURIComponent(data.url)+"&filename="+encodeURIComponent(item.filename)+"&quality="+item.quality;
+      a.download=item.filename;document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>{clearInterval(interval);item.progress=100;item.status="done";isDownloading=false;updateQueueUI();processQueue();},3000);
+    }else{item.status="error";isDownloading=false;updateQueueUI();processQueue();}
+  }catch(e){item.status="error";isDownloading=false;updateQueueUI();processQueue();}
+}
+function toggleQueue(){document.getElementById("queue-panel").classList.toggle("show");}
+
+// ===== TABS =====
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("tab-"+tab).classList.add("active");
+  document.getElementById("genre-bar").style.display=tab==="trending"?"flex":"none";
+  if(tab==="trending"){document.getElementById("section-title").textContent=currentGenre==="all"?"Trending Now":"Trending - "+currentGenre;renderAnimeGrid(filterByGenre(trendingData));}
+  else if(tab==="favorites"){document.getElementById("section-title").textContent="Your Favorites";renderFavorites();}
+  else if(tab==="recent"){document.getElementById("section-title").textContent="Recently Watched";renderRecentGrid();}
+}
+
+function renderFavorites(){
+  const favs=getFavs();
+  const grid=document.getElementById("anime-grid");
+  if(!favs.length){grid.innerHTML='<div class="empty-state"><p>No favorites yet. Heart any anime to save it here!</p></div>';return;}
+  grid.innerHTML=favs.map(a=>`
+    <div class="anime-card" onclick='openAnime(${a.id})'>
+      <img src="${esc(a.image)}" alt="${esc(a.title)}" onerror="this.src='https://via.placeholder.com/170x240/0a0f2e/2962ff?text=No+Image'">
+      <div class="anime-card-info">
+        <div class="anime-card-title">${esc(a.title)}</div>
+        <div class="anime-card-meta">
+          ${a.episodes?`<span>${a.episodes} EP</span>`:""}
+          ${a.score?`<span>${a.score}</span>`:""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderRecentGrid(){
+  const rec=LS.get("recent");
+  const grid=document.getElementById("anime-grid");
+  if(!rec.length){grid.innerHTML='<div class="empty-state"><p>No recently watched anime. Start watching!</p></div>';return;}
+  grid.innerHTML=rec.map(r=>`
+    <div class="anime-card" onclick='continueWatching(${r.id},${r.epIndex})'>
+      <img src="${esc(r.image)}" onerror="this.src='https://via.placeholder.com/170x240/0a0f2e/2962ff?text=No+Image'">
+      <div class="anime-card-info">
+        <div class="anime-card-title">${esc(r.title)}</div>
+        <div class="anime-card-meta"><span>Continue EP ${esc(r.epNumber)}</span></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ===== GENRE FILTER =====
+function filterGenre(genre){
+  currentGenre=genre;
+  document.querySelectorAll(".genre-chip").forEach(g=>g.classList.remove("active"));
+  event.target.classList.add("active");
+  if(currentTab==="trending"){
+    document.getElementById("section-title").textContent=genre==="all"?"Trending Now":"Trending - "+genre;
+    renderAnimeGrid(filterByGenre(trendingData));
+  }
+}
+function filterByGenre(list){
+  if(currentGenre==="all")return list;
+  return list.filter(a=>a.genres&&a.genres.includes(currentGenre));
+}
+
+// ===== CORE FUNCTIONS =====
+function showToast(msg,type=""){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className="toast "+(type||"");t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),4000);
+}
+function setStatus(msg,type=""){
+  const el=document.getElementById("ah-status");
+  el.textContent=msg;el.className="status-msg "+type;el.style.display="block";
+}
+
+// Mobile sidebar
+document.getElementById("content").addEventListener("click",function(){
+  if(window.innerWidth<=900)document.getElementById("sidebar").classList.remove("open");
+});
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("open");
+}
+
+async function checkStatus(){
+  try{
+    const r=await fetch("/api/status");
+    const s=await r.json();
+    setDot("dot-ah",s.animeheaven==="connected");
+    setDot("dot-anilist",s.anilist==="connected");
+    setDot("dot-groq",s.groq==="connected");
+  }catch(e){
+    setDot("dot-ah",false);setDot("dot-anilist",false);setDot("dot-groq",false);
+  }
+}
+function setDot(id,on){document.getElementById(id).className="status-dot "+(on?"on":"off");}
+checkStatus();setInterval(checkStatus,10000);
+
+async function loadTrending(){
+  const grid=document.getElementById("anime-grid");
+  grid.innerHTML='<div class="loading"><div class="spinner"></div>Loading trending...</div>';
+  try{
+    const r=await fetch("/api/search?q=");
+    const data=await r.json();
+    trendingData=data.results||[];
+    allResults=trendingData;
+    if(currentTab==="trending")renderAnimeGrid(filterByGenre(trendingData));
+  }catch(e){grid.innerHTML='<div class="loading">Failed to load.</div>';}
+}
+loadTrending();
+
+function renderAnimeGrid(list){
+  const grid=document.getElementById("anime-grid");
+  if(!list.length){grid.innerHTML='<div class="loading">No results.</div>';return;}
+  grid.innerHTML=list.map(a=>`
+    <div class="anime-card" onclick='openAnime(${a.id})'>
+      <button class="heart-btn ${isFav(a.id)?'liked':''}" data-id="${a.id}" onclick="event.stopPropagation();toggleFavFromCard(${a.id})">
+        ${isFav(a.id)?"&#10084;":"&#9825;"}
+      </button>
+      <img src="${esc(a.image)}" alt="${esc(a.title)}" onerror="this.src='https://via.placeholder.com/170x240/0a0f2e/2962ff?text=No+Image'">
+      ${a.score?`<div class="score-badge">${a.score}</div>`:""}
+      <div class="anime-card-info">
+        <div class="anime-card-title">${esc(a.title_english||a.title)}</div>
+        <div class="anime-card-meta">
+          ${a.episodes?`<span>${a.episodes} EP</span>`:""}
+          ${a.year?`<span>${a.year}</span>`:""}
+          ${a.genres?.slice(0,2).map(g=>`<span>${esc(g)}</span>`).join("")||""}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function toggleFavFromCard(id){
+  const anime=allResults.find(a=>a.id===id)||trendingData.find(a=>a.id===id);
+  if(!anime){const r=await fetch("/api/anime/"+id);const d=await r.json();toggleFav(d);}
+  else toggleFav(anime);
+}
+
+async function doSearch(){
+  const q=document.getElementById("search-input").value.trim();
+  if(!q)return;
+  addSearchHistory(q);
+  document.getElementById("search-history").classList.remove("show");
+  switchTab("trending");
+  const grid=document.getElementById("anime-grid");
+  grid.innerHTML='<div class="loading"><div class="spinner"></div>Searching...</div>';
+  try{
+    const r=await fetch("/api/search?q="+encodeURIComponent(q));
+    const data=await r.json();
+    allResults=data.results||[];
+    document.getElementById("section-title").textContent=data.results?.length?`Results for "${esc(q)}"`:"No Results";
+    renderAnimeGrid(allResults);
+  }catch(e){grid.innerHTML='<div class="loading">Search failed.</div>';}
+}
+
+async function openAnime(id){
+  document.getElementById("search-view").classList.add("hidden");
+  document.getElementById("detail-view").classList.remove("hidden");
+  document.getElementById("detail-content").innerHTML='<div class="loading"><div class="spinner"></div>Loading anime info...</div>';
+  document.getElementById("episode-list").innerHTML='<div class="loading"><div class="spinner"></div>Loading episodes...</div>';
+  document.getElementById("ah-status").style.display="none";
+  document.getElementById("ah-search-box").style.display="none";
+  currentEpisodes=[];currentAhId="";
+  if(window.innerWidth<=900)document.getElementById("sidebar").classList.remove("open");
+
+  try{
+    const r=await fetch("/api/anime/"+id);
+    const anime=await r.json();currentAnime=anime;
+    document.getElementById("detail-content").innerHTML=`
+      <img src="${esc(anime.image)}" alt="${esc(anime.title)}" onerror="this.src='https://via.placeholder.com/200x300'">
+      <div class="anime-detail-info">
+        <h1>${esc(anime.title_english||anime.title)}</h1>
+        <div class="meta">
+          ${anime.score?`<span>Score: ${anime.score}</span>`:""}
+          ${anime.episodes?`<span>${anime.episodes} EP</span>`:""}
+          ${anime.year?`<span>${anime.year}</span>`:""}
+          ${anime.status?`<span>${esc(anime.status)}</span>`:""}
+          ${anime.genres?.map(g=>`<span>${esc(g)}</span>`).join("")||""}
+        </div>
+        <p>${esc(anime.synopsis||"No description.")}</p>
+      </div>
+    `;
+    setStatus("Searching AnimeHeaven...","warn");
+    await findAnimeHeavenEpisodes(anime);
+  }catch(e){
+    document.getElementById("detail-content").innerHTML='<div class="loading">Error loading anime.</div>';
+  }
+}
+
+async function findAnimeHeavenEpisodes(anime){
+  const searchTitles=[anime.title_english,anime.title].filter(Boolean);
+  let found=false;
+  for(const searchTitle of searchTitles){
+    try{
+      setStatus(`Searching AnimeHeaven for: "${searchTitle}"...`,`warn`);
+      const r=await fetch("/api/animeheaven/search?q="+encodeURIComponent(searchTitle));
+      const ah=await r.json();
+      if(ah.results?.length){
+        const ahId=ah.results[0].id;
+        const r2=await fetch("/api/animeheaven/episodes/"+ahId);
+        const epData=await r2.json();
+        if(epData.episodes?.length){
+          currentAhId=ahId;currentEpisodes=epData.episodes;
+          setStatus(`Found ${epData.episodes.length} episodes on AnimeHeaven!`,`ok`);
+          renderEpisodes(currentEpisodes);found=true;break;
+        }
+      }
+    }catch(e){}
+  }
+  if(!found){
+    setStatus("AnimeHeaven doesn't have this anime yet. Try searching manually below.","bad");
+    document.getElementById("ah-search-box").style.display="flex";
+    document.getElementById("ah-search-input").value=anime.title_english||anime.title;
+    generateGenericEpisodes(anime.episodes);
+  }
+}
+
+async function manualAhSearch(){
+  const q=document.getElementById("ah-search-input").value.trim();
+  if(!q)return;
+  setStatus(`Manually searching AnimeHeaven for: "${q}"...`,`warn`);
+  try{
+    const r=await fetch("/api/animeheaven/search?q="+encodeURIComponent(q));
+    const ah=await r.json();
+    if(ah.results?.length){
+      const ahId=ah.results[0].id;
+      const r2=await fetch("/api/animeheaven/episodes/"+ahId);
+      const epData=await r2.json();
+      if(epData.episodes?.length){
+        currentAhId=ahId;currentEpisodes=epData.episodes;
+        setStatus(`Found ${epData.episodes.length} episodes!`,`ok`);
+        renderEpisodes(currentEpisodes);
+      }else{setStatus("Found anime but no episodes listed.","bad");}
+    }else{setStatus("No results on AnimeHeaven for this search.","bad");}
+  }catch(e){setStatus("Error searching AnimeHeaven.","bad");}
+}
+
+function generateGenericEpisodes(count){
+  count=count||12;currentEpisodes=[];
+  for(let i=1;i<=count;i++){
+    currentEpisodes.push({hash:"",number:String(i),title:`Episode ${i}`,anime_id:""});
+  }
+  renderEpisodes(currentEpisodes);
+}
+
+function renderEpisodes(eps){
+  const list=document.getElementById("episode-list");
+  const prog=getProgress(currentAnime?.id);
+  list.innerHTML=eps.map((ep,i)=>`
+    <div class="episode-item" data-index="${i}">
+      <div class="episode-item-left">
+        <div class="ep-num">${ep.number}</div>
+        <div class="ep-info">
+          <div class="ep-title">${esc(ep.title)}</div>
+          <div class="ep-sub ${ep.hash?'ok':'bad'}">${ep.hash?"Stream & Download Ready":"Not available on AnimeHeaven"}</div>
+          ${prog&&prog.epIndex===i?'<div class="ep-progress">Last watched</div>':''}
+        </div>
+      </div>
+      <div class="ep-btns">
+        ${ep.hash?`
+          <button class="ep-btn watch" onclick="playEpisode(${i})">&#9658; Watch</button>
+          <select class="ep-btn" id="dl-quality-${i}" style="width:70px">
+            <option value="original">Original</option>
+            <option value="720p">720p</option>
+            <option value="480p">480p</option>
+            <option value="360p">360p</option>
+          </select>
+          <button class="ep-btn download" onclick="dlEpisode(${i})">&#11015; DL</button>
+          <button class="ep-btn" onclick="queueEpisode(${i})" title="Add to queue">+Q</button>
+        `:`<span style="color:#666;font-size:12px">No source</span>`}
+      </div>
+    </div>
+  `).join("");
+}
+
 async function playEpisode(index){
   currentEpIndex=index;
   const ep=currentEpisodes[index];
-  if(!ep||!ep.hash){showToast('No stream available for this episode','error');return}
-  showToast('Loading stream...');
+  if(!ep||!ep.hash){showToast("No stream available for this episode","error");return;}
+  showToast("Loading stream...");
   try{
-    const r=await fetch('/api/stream/'+ep.hash);
+    const r=await fetch("/api/stream/"+ep.hash);
     const data=await r.json();
     if(data.url){
       currentStreamUrl=data.url;
-      document.getElementById('player-title').textContent=(currentAnime?.title_english||currentAnime?.title||'')+' - '+ep.title;
-      const v=document.getElementById('video-player');
-      v.src='/api/proxy-stream?url='+encodeURIComponent(data.url);
-      v.onended=onVideoEnded;
-      v.ontimeupdate=saveExactPosition;
-      document.getElementById('player-overlay').classList.remove('hidden');
-      showToast('Now playing: '+ep.title,'success');
+      document.getElementById("player-title").textContent=(currentAnime?.title_english||currentAnime?.title||"")+" - "+ep.title;
+      document.getElementById("video-player").src="/api/proxy-stream?url="+encodeURIComponent(data.url);
+      document.getElementById("player-overlay").classList.remove("hidden");
+      showToast("Now playing: "+ep.title,"success");
       addRecent(currentAnime,index);
       saveProgress(currentAnime.id,index);
-      history.replaceState(null,'','?anime='+currentAnime.id+'&ep='+index);
-      loadVolume();
-      setTimeout(loadExactPosition,500);
-      renderPlayerEpList();
-      const savedSpeed=LS.get('speed',1);
-      v.playbackRate=parseFloat(savedSpeed);
-      document.getElementById('speed-select').value=savedSpeed;
-    }else{showToast('Stream not found on server','error')}
-  }catch(e){showToast('Error loading stream: '+e.message,'error')}
+    }else{showToast("Stream not found on server","error");}
+  }catch(e){showToast("Error loading stream: "+e.message,"error");}
+}
+
+async function dlEpisode(index){
+  const ep=currentEpisodes[index];
+  if(!ep||!ep.hash){showToast("No download link for this episode","error");return;}
+  const qualitySelect=document.getElementById("dl-quality-"+index);
+  const quality=qualitySelect?qualitySelect.value:"original";
+  showToast("Getting download link...");
+  try{
+    const r=await fetch("/api/stream/"+ep.hash);
+    const data=await r.json();
+    if(data.url){
+      const baseName=((currentAnime?.title_english||currentAnime?.title||"episode").replace(/[^a-z0-9]/gi,"_"))+"_EP"+ep.number;
+      const fname=quality==="original"?baseName+".mp4":baseName+"_"+quality+".mp4";
+      const a=document.createElement("a");
+      a.href="/api/download?url="+encodeURIComponent(data.url)+"&filename="+encodeURIComponent(fname)+"&quality="+quality;
+      a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);
+      showToast("Downloading: "+fname,"success");
+      saveProgress(currentAnime.id,index);
+    }else{showToast("Download URL not found on server","error");}
+  }catch(e){showToast("Download failed: "+e.message,"error");}
+}
+
+function queueEpisode(index){
+  const ep=currentEpisodes[index];
+  if(!ep||!ep.hash){showToast("No download link for this episode","error");return;}
+  const qualitySelect=document.getElementById("dl-quality-"+index);
+  const quality=qualitySelect?qualitySelect.value:"original";
+  addToQueue(ep,quality);
+}
+
+function downloadCurrent(){if(currentEpisodes[currentEpIndex])dlEpisode(currentEpIndex);}
+function nextEpisode(){if(currentEpIndex<currentEpisodes.length-1){playEpisode(currentEpIndex+1);}else{showToast("This is the last episode","error");}}
+function closePlayer(){
+  autoNextCancel();
+  document.getElementById("video-player").pause();
+  document.getElementById("video-player").src="";
+  document.getElementById("player-overlay").classList.add("hidden");
+}
+
+// ===== PLAYBACK SPEED =====
+function changeSpeed(speed){
+  const v=document.getElementById("video-player");
+  v.playbackRate=parseFloat(speed);
+  showKeyToast("Speed: "+speed+"x");
+}
+
+// ===== AUTO-NEXT EPISODE =====
+let autoNextTimer=null;
+let autoNextCount=5;
+function setupAutoNext(){
+  const v=document.getElementById("video-player");
+  v.addEventListener("ended",onVideoEnded);
 }
 function onVideoEnded(){
-  const autoplay=LS.get('setting_autoplay',true);
-  if(!autoplay||currentEpIndex>=currentEpisodes.length-1){showToast('Episode finished','success');return}
-  const next=currentEpisodes[currentEpIndex+1];
-  if(!next)return;
-  document.getElementById('auto-next-title').textContent=next.title||'Episode '+(currentEpIndex+2);
-  document.getElementById('auto-next-overlay').classList.add('show');
+  if(currentEpIndex>=currentEpisodes.length-1)return;
+  const nextEp=currentEpisodes[currentEpIndex+1];
+  if(!nextEp||!nextEp.hash)return;
+  document.getElementById("auto-next-title").textContent=nextEp.title||("Episode "+nextEp.number);
+  document.getElementById("auto-next-overlay").classList.add("show");
   autoNextCount=5;
-  document.getElementById('auto-next-countdown').textContent=autoNextCount;
-  autoNextTimer=setInterval(()=>{autoNextCount--;document.getElementById('auto-next-countdown').textContent=autoNextCount;if(autoNextCount<=0){clearInterval(autoNextTimer);document.getElementById('auto-next-overlay').classList.remove('show');playEpisode(currentEpIndex+1)}},1000)
+  document.getElementById("auto-next-countdown").textContent=autoNextCount;
+  autoNextTimer=setInterval(()=>{
+    autoNextCount--;
+    document.getElementById("auto-next-countdown").textContent=autoNextCount;
+    if(autoNextCount<=0){clearInterval(autoNextTimer);autoNextPlay();}
+  },1000);
 }
-function autoNextPlay(){clearInterval(autoNextTimer);document.getElementById('auto-next-overlay').classList.remove('show');playEpisode(currentEpIndex+1)}
-function autoNextCancel(){clearInterval(autoNextTimer);document.getElementById('auto-next-overlay').classList.remove('show')}
-function nextEpisode(){if(currentEpIndex<currentEpisodes.length-1)playEpisode(currentEpIndex+1);else showToast('Last episode','error')}
-function closePlayer(){const v=document.getElementById('video-player');if(document.pictureInPictureElement)document.exitPictureInPicture();v.pause();v.src='';document.getElementById('player-overlay').classList.add('hidden');history.replaceState(null,'','/')}
-function changeSpeed(s){const v=document.getElementById('video-player');v.playbackRate=parseFloat(s);LS.set('speed',s);showToast('Speed: '+s+'x')}
-function togglePiP(){const v=document.getElementById('video-player');if(document.pictureInPictureElement){document.exitPictureInPicture()}else if(v.requestPictureInPicture){v.requestPictureInPicture()}}
-function saveVolume(){LS.set('volume',document.getElementById('video-player').volume)}
-function loadVolume(){const v=LS.get('volume',1);document.getElementById('video-player').volume=v}
-function saveExactPosition(){const v=document.getElementById('video-player');if(!v||!currentAnime)return;const t=v.currentTime;if(t>10&&t<v.duration-10){const p=LS.get('progress',{});p[currentAnime.id+'_'+currentEpIndex]={time:t,date:Date.now()};LS.set('progress',p)}}
-function loadExactPosition(){const p=LS.get('progress',{});const saved=p[currentAnime.id+'_'+currentEpIndex];if(saved&&saved.time>5){const v=document.getElementById('video-player');v.currentTime=saved.time;showToast('Resumed at '+formatTime(saved.time))}}
-function saveProgress(animeId,epIndex){const p=LS.get('progress',{});p[animeId+'_last']={epIndex,date:Date.now()};LS.set('progress',p)}
-function renderPlayerEpList(){const list=document.getElementById('player-ep-list');list.innerHTML=currentEpisodes.map((ep,i)=>`<div class="player-ep-item ${i===currentEpIndex?'active':''}" onclick="playEpisode(${i})"><div class="ep-num" style="width:28px;height:28px;font-size:10px">${ep.number||i+1}</div><span>${escapeHtml(ep.title||'Episode '+(i+1))}</span></div>`).join('')}
-function toggleEpList(){document.getElementById('player-episodes').classList.toggle('show')}
-function miniPlayerBack(){const v=document.getElementById('video-player');const mini=document.getElementById('mini-video');if(mini.src){v.src=mini.src;v.currentTime=mini.currentTime;v.play()}document.getElementById('mini-player').classList.remove('show');miniPlayerActive=false;document.getElementById('player-overlay').classList.remove('hidden')}
-function closeMiniPlayer(){document.getElementById('mini-player').classList.remove('show');miniPlayerActive=false}
+function autoNextPlay(){
+  autoNextCancel();
+  if(currentEpIndex<currentEpisodes.length-1)playEpisode(currentEpIndex+1);
+}
+function autoNextCancel(){
+  if(autoNextTimer){clearInterval(autoNextTimer);autoNextTimer=null;}
+  document.getElementById("auto-next-overlay").classList.remove("show");
+}
 
-// ===== KEYBOARD SHORTCUTS (single handler) =====
-document.addEventListener('keydown',function(e){
-  const v=document.getElementById('video-player');
-  const playerOpen=!document.getElementById('player-overlay').classList.contains('hidden');
-  const hints=LS.get('setting_keyhints',true);
-  if(!playerOpen)return;
+// ===== KEYBOARD SHORTCUTS =====
+let keyToastTimer=null;
+function showKeyToast(msg){
+  const t=document.getElementById("key-toast");
+  t.textContent=msg;t.classList.add("show");
+  if(keyToastTimer)clearTimeout(keyToastTimer);
+  keyToastTimer=setTimeout(()=>t.classList.remove("show"),1500);
+}
+document.addEventListener("keydown",function(e){
+  const overlay=document.getElementById("player-overlay");
+  if(overlay.classList.contains("hidden"))return;
+  const v=document.getElementById("video-player");
+  if(!v.src)return;
+  
+  // Don't trigger when typing in chat
+  if(document.activeElement&&document.activeElement.tagName==="INPUT")return;
+  
   switch(e.code){
-    case 'Space':e.preventDefault();if(v.paused)v.play();else v.pause();if(hints)showKeyHint(v.paused?'Paused':'Playing');break;
-    case 'ArrowLeft':e.preventDefault();v.currentTime=Math.max(0,v.currentTime-10);if(hints)showKeyHint('-10s');break;
-    case 'ArrowRight':e.preventDefault();v.currentTime=Math.min(v.duration,v.currentTime+10);if(hints)showKeyHint('+10s');break;
-    case 'ArrowUp':e.preventDefault();v.volume=Math.min(1,v.volume+0.1);if(hints)showKeyHint('Vol: '+Math.round(v.volume*100)+'%');break;
-    case 'ArrowDown':e.preventDefault();v.volume=Math.max(0,v.volume-0.1);if(hints)showKeyHint('Vol: '+Math.round(v.volume*100)+'%');break;
-    case 'KeyN':e.preventDefault();nextEpisode();if(hints)showKeyHint('Next episode');break;
-    case 'KeyF':e.preventDefault();if(v.requestFullscreen)v.requestFullscreen();break;
-    case 'KeyM':e.preventDefault();v.muted=!v.muted;if(hints)showKeyHint(v.muted?'Muted':'Unmuted');break;
-    case 'KeyS':e.preventDefault();const speeds=[0.5,0.75,1,1.25,1.5,2];const ci=speeds.indexOf(parseFloat(document.getElementById('speed-select').value));const ni=(ci+1)%speeds.length;changeSpeed(speeds[ni]);document.getElementById('speed-select').value=speeds[ni];if(hints)showKeyHint('Speed: '+speeds[ni]+'x');break;
-    case 'KeyP':e.preventDefault();togglePiP();if(hints)showKeyHint('PiP toggled');break;
-    case 'Slash':if(e.shiftKey){e.preventDefault();toggleKeyHelp()}break;
-    case 'Escape':e.preventDefault();closePlayer();break;
+    case "Space":
+      e.preventDefault();
+      if(v.paused){v.play();showKeyToast("Play");}else{v.pause();showKeyToast("Pause");}
+      break;
+    case "ArrowLeft":
+      e.preventDefault();v.currentTime=Math.max(0,v.currentTime-10);showKeyToast("-10s");break;
+    case "ArrowRight":
+      e.preventDefault();v.currentTime=Math.min(v.duration||9999,v.currentTime+10);showKeyToast("+10s");break;
+    case "ArrowUp":
+      e.preventDefault();v.volume=Math.min(1,v.volume+0.1);showKeyToast("Vol "+Math.round(v.volume*100)+"%");break;
+    case "ArrowDown":
+      e.preventDefault();v.volume=Math.max(0,v.volume-0.1);showKeyToast("Vol "+Math.round(v.volume*100)+"%");break;
+    case "KeyN":
+      e.preventDefault();nextEpisode();showKeyToast("Next Episode");break;
+    case "KeyF":
+      e.preventDefault();
+      if(document.fullscreenElement){document.exitFullscreen();showKeyToast("Exit Fullscreen");}
+      else{v.requestFullscreen();showKeyToast("Fullscreen");}
+      break;
+    case "KeyM":
+      e.preventDefault();v.muted=!v.muted;showKeyToast(v.muted?"Muted":"Unmuted");break;
+    case "KeyS":
+      e.preventDefault();
+      const speeds=[0.5,0.75,1,1.25,1.5,2];
+      const sel=document.getElementById("speed-select");
+      let idx=speeds.indexOf(parseFloat(sel.value));
+      idx=(idx+1)%speeds.length;
+      sel.value=speeds[idx];
+      changeSpeed(speeds[idx]);
+      break;
   }
 });
-function toggleKeyHelp(){document.getElementById('key-help-overlay').classList.toggle('show')}
 
-// ===== DOWNLOADS =====
-function queueDownload(hash,filename,epIndex){if(isQueued(hash)){showToast('Already in queue');return}const ep=currentEpisodes[epIndex];queue.push({hash,filename,epIndex,status:'queued',progress:0,added:Date.now()});LS.set('queue',queue);updateQueueBadge();showToast('Added to download queue','success');renderEpisodes(currentEpisodes,currentAnime)}
-function updateQueueBadge(){const badge=document.getElementById('queue-badge');const pending=queue.filter(q=>q.status!=='done').length;badge.textContent=pending;if(pending>0)badge.classList.remove('hidden');else badge.classList.add('hidden')}
-function toggleQueue(){document.getElementById('queue-panel').classList.toggle('show')}
-function renderQueue(){const list=document.getElementById('queue-list');if(!queue.length){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px">No downloads</div>';return}list.innerHTML=queue.map((q,i)=>`<div class="queue-item"><div class="q-name">${escapeHtml(q.filename)}</div><div class="q-status ${q.status}">${q.status}</div></div>${q.status==='downloading'?'<div class="q-bar"><div style="width:'+q.progress+'%"></div></div>':''}`).join('')}
-async function downloadCurrent(){if(!currentStreamUrl||!currentAnime)return;const ep=currentEpisodes[currentEpIndex];const filename=(currentAnime.title_english||currentAnime.title||'episode')+'_EP'+(ep.number||currentEpIndex+1)+'.mp4';const quality=LS.get('setting_quality','original');showToast('Starting download...');try{const r=await fetch('/api/download?url='+encodeURIComponent(currentStreamUrl)+'&filename='+encodeURIComponent(filename)+'&quality='+quality);if(r.ok){showToast('Download started: '+filename,'success')}else{showToast('Download failed','error')}}catch(e){showToast('Download error: '+e.message,'error')}}
+// Init auto-next listener
+setupAutoNext();
+function showSearch(){document.getElementById("search-view").classList.remove("hidden");document.getElementById("detail-view").classList.add("hidden");currentEpisodes=[];currentAhId="";}
 
-// ===== COMMENTS =====
-function renderComments(animeId){const list=document.getElementById('comments-list');const c=comments[animeId]||[];if(!c.length){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px">No comments yet. Be the first!</div>';return}list.innerHTML=c.map(x=>`<div class="comment-item"><div class="c-name">${escapeHtml(x.name||'Anonymous')}</div><div class="c-text">${escapeHtml(x.text)}</div><div class="c-time">${new Date(x.date).toLocaleString()}</div></div>`).join('')}
-function addComment(){const input=document.getElementById('comment-input');const text=input.value.trim();if(!text||!currentAnime)return;if(!comments[currentAnime.id])comments[currentAnime.id]=[];comments[currentAnime.id].push({name:'You',text,date:Date.now()});LS.set('comments',comments);input.value='';renderComments(currentAnime.id);showToast('Comment posted','success')}
+// ===== AI CHAT =====
+async function sendChat(){
+  const input=document.getElementById("chat-input");
+  const msg=input.value.trim();if(!msg)return;input.value="";
+  const box=document.getElementById("chat-messages");
+  box.innerHTML+=`<div class="msg msg-user">${esc(msg)}<div class="msg-time">You</div></div>`;
+  box.scrollTop=box.scrollHeight;chatHistory.push({role:"user",content:msg});
+  try{
+    const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:chatHistory})});
+    const data=await r.json();
+    if(data.reply&&!data.reply.includes("Error")&&!data.reply.includes("error")){
+      box.innerHTML+=`<div class="msg msg-ai"><strong>KYRO:</strong> ${fmt(data.reply)}<div class="msg-time">KYRO</div></div>`;
+      chatHistory.push({role:"assistant",content:data.reply});
+    }else{
+      box.innerHTML+=`<div class="msg msg-ai"><strong>KYRO:</strong> I'm having trouble connecting to my brain right now. Ask me about anime recommendations, genres like action/romance/isekai, or specific shows!<div class="msg-time">KYRO</div></div>`;
+    }
+  }catch(e){
+    box.innerHTML+=`<div class="msg msg-ai"><strong>KYRO:</strong> Connection issue. Try again in a moment.<div class="msg-time">KYRO</div></div>`;
+  }
+  box.scrollTop=box.scrollHeight;
+}
 
-// ===== SHARE =====
-function shareAnime(){if(!currentAnime)return;const text='Check out '+currentAnime.title_english+' on KYRO AI Anime!';if(navigator.share){navigator.share({title:currentAnime.title_english,text,url:window.location.href})}else{navigator.clipboard.writeText(window.location.href);showToast('Link copied to clipboard','success')}}
-function copyTitle(){if(!currentAnime)return;navigator.clipboard.writeText(currentAnime.title_english||currentAnime.title);showToast('Title copied','success')}
-function shareEpisode(){if(!currentAnime)return;const ep=currentEpisodes[currentEpIndex];const text='Watching '+currentAnime.title_english+' - '+ep.title;navigator.clipboard.writeText(text);showToast('Episode info copied','success')}
-
-// ===== SCHEDULE =====
-async function loadSchedule(){const now=Date.now();if(scheduleData.length&&now-scheduleLastFetch<3600000){renderSchedule();return}try{const r=await fetch('/api/search?q=');const data=await r.json();const trending=data.results||[];scheduleData=generateSchedule(trending);LS.set('schedule',scheduleData);LS.set('schedule_last',now);renderSchedule()}catch(e){console.log('Schedule error:',e)}}
-function generateSchedule(animeList){const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];const today=new Date().getDay();return days.map((day,i)=>({day,items:animeList.slice(i*3,(i+1)*3).map(a=>({title:a.title_english||a.title,id:a.id,isNew:i===today}))}))}
-function renderSchedule(){const grid=document.getElementById('schedule-grid');const today=new Date().getDay();grid.innerHTML=scheduleData.map((d,i)=>`<div class="schedule-day ${i===today?'today':''}"><h5>${d.day}</h5>${d.items.map(item=>`<div class="sch-item ${item.isNew?'new':''}" onclick="openAnime(${item.id})">${escapeHtml(item.title)}</div>`).join('')}</div>`).join('')}
-
-// ===== STATUS CHECK =====
-async function checkStatus(){try{const r=await fetch('/api/status');const s=await r.json();document.getElementById('dot-ah').className='status-dot '+(s.stream==='connected'?'on':'off');document.getElementById('dot-anilist').className='status-dot '+(s.anilist==='connected'?'on':'off');document.getElementById('dot-groq').className='status-dot '+(s.groq==='connected'?'on':'off')}catch(e){}}
-
-// ===== INIT =====
-function showSearch(){document.getElementById('search-view').classList.remove('hidden');document.getElementById('detail-view').classList.add('hidden');history.replaceState(null,'','/')}
-function init(){const theme=LS.get('theme','dark');if(theme==='light')document.body.classList.add('light');updateFavCount();renderRecentlyWatched();loadSchedule();checkStatus();setInterval(checkStatus,30000);loadTrending();const params=new URLSearchParams(window.location.search);const animeId=params.get('anime');if(animeId){openAnime(parseInt(animeId))}}
-init();
+function fmt(text){return esc(text).replace(/\n/g,"<br>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");}
+function esc(text){if(!text)return"";const d=document.createElement("div");d.textContent=text;return d.innerHTML;}
 </script></body></html>

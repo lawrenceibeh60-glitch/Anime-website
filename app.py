@@ -10,7 +10,7 @@ app = Flask(__name__)
 # ===== FFMPEG STATUS CHECK (runs on startup) =====
 FFMPEG_AVAILABLE = False
 try:
-    result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, timeout=5)
+    result = subprocess.run(['ffmpeg', '-version'], capture_output=True, text=True, timeout=5)
     if result.returncode == 0:
         FFMPEG_AVAILABLE = True
         print(f"[KYRO] FFMPEG IS AVAILABLE: {result.stdout.splitlines()[0]}")
@@ -77,6 +77,7 @@ def ah_get_episodes(anime_id):
                 match = re.search(r'gatea\("([^"]+)"\)', onclick)
                 if match:
                     ep_hash = match.group(1)
+                    # Extract episode number from nested divs
                     watch2 = a.find("div", class_=lambda x: x and "watch2" in str(x))
                     if watch2:
                         ep_num = watch2.get_text(strip=True)
@@ -138,7 +139,7 @@ def status():
     try: anilist_ok = requests.post(ANILIST_URL, json={"query": "{Page(page:1,perPage:1){media(type:ANIME){id}}}", "variables": {}}, timeout=10).status_code == 200
     except: anilist_ok = False
     return jsonify({
-        "stream": "connected" if ah_ok else "disconnected",
+        "animeheaven": "connected" if ah_ok else "disconnected",
         "anilist": "connected" if anilist_ok else "disconnected",
         "groq": "connected" if GROQ_API_KEY else "no_key",
         "ffmpeg": "available" if FFMPEG_AVAILABLE else "not_installed",
@@ -174,13 +175,13 @@ def anime_detail(anime_id):
     try: return jsonify(anilist_detail(anime_id))
     except Exception as e: return jsonify({"error": str(e)})
 
-@app.route("/api/stream/search")
+@app.route("/api/animeheaven/search")
 def ah_search_route():
     q = request.args.get("q", "")
     if not q: return jsonify({"results": []})
     return jsonify({"results": ah_search_anime(q)})
 
-@app.route("/api/stream/episodes/<path:anime_id>")
+@app.route("/api/animeheaven/episodes/<path:anime_id>")
 def ah_episodes_route(anime_id): return jsonify(ah_get_episodes(anime_id))
 
 @app.route("/api/stream/<ep_hash>")
@@ -203,42 +204,48 @@ def proxy_stream():
 def download():
     url = request.args.get("url", "")
     filename = request.args.get("filename", "episode.mp4")
-    quality = request.args.get("quality", "original")
+    quality = request.args.get("quality", "original")  # original, 720p, 480p, 360p
     if not url: return jsonify({"error": "No URL"}), 400
     try:
         headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://animeheaven.me/gate.php"}
-
+        
+        # If quality is original, just proxy the download
         if quality == "original" or quality not in ["720p", "480p", "360p"]:
             r = requests.get(url, headers=headers, stream=True, timeout=60)
             return Response(stream_with_context(r.iter_content(chunk_size=8192)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
-
+        
+        # For transcoded quality, check if ffmpeg is available
         if not FFMPEG_AVAILABLE:
             print(f"[KYRO] FFMPEG NOT AVAILABLE - returning original quality for {filename}")
             r = requests.get(url, headers=headers, stream=True, timeout=60)
             return Response(stream_with_context(r.iter_content(chunk_size=8192)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
-
+        
+        # ffmpeg is available - try transcoding
         print(f"[KYRO] Starting ffmpeg transcode: {filename} -> {quality}")
         scale_map = {"720p": "1280:720", "480p": "854:480", "360p": "640:360"}
         scale = scale_map.get(quality, "1280:720")
-
+        
+        # Use /tmp for temp files (Render allows this)
         temp_dir = "/tmp/kyro_" + str(os.getpid())
         os.makedirs(temp_dir, exist_ok=True)
         temp_input = os.path.join(temp_dir, "input.mp4")
         temp_output = os.path.join(temp_dir, f"out_{quality}.mp4")
-
+        
         try:
+            # Download input (with size limit check)
             r = requests.get(url, headers=headers, stream=True, timeout=60)
             total_size = 0
-            max_size = 500 * 1024 * 1024
+            max_size = 500 * 1024 * 1024  # 500MB limit for free tier
             with open(temp_input, "wb") as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     total_size += len(chunk)
                     if total_size > max_size:
                         raise Exception("Video too large for free tier transcoding (limit: 500MB)")
                     f.write(chunk)
-
+            
             print(f"[KYRO] Downloaded {total_size/1024/1024:.1f}MB, starting ffmpeg...")
-
+            
+            # Transcode with ffmpeg
             cmd = [
                 "ffmpeg", "-y", "-i", temp_input,
                 "-vf", f"scale={scale}",
@@ -247,43 +254,48 @@ def download():
                 "-movflags", "+faststart",
                 temp_output
             ]
-            result = subprocess.run(cmd, capture_output=True, timeout=120)
-
+            result = sp.run(cmd, capture_output=True, timeout=120)
+            
             if result.returncode != 0:
                 print(f"[KYRO] ffmpeg failed: {result.stderr.decode()[:200]}")
                 raise Exception("ffmpeg transcoding failed")
-
+            
+            # Check output file exists and has size
             if not os.path.exists(temp_output) or os.path.getsize(temp_output) < 1024:
                 raise Exception("ffmpeg output file is empty")
-
+            
             out_size = os.path.getsize(temp_output)
             print(f"[KYRO] Transcode complete: {out_size/1024/1024:.1f}MB")
-
+            
+            # Return transcoded file
             def generate():
                 with open(temp_output, "rb") as f:
                     while True:
                         chunk = f.read(8192)
                         if not chunk: break
                         yield chunk
+                # Cleanup
                 try:
                     os.remove(temp_input)
                     os.remove(temp_output)
                     os.rmdir(temp_dir)
                 except: pass
-
+            
             return Response(generate(), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename.replace('.mp4', f'_{quality}.mp4')}"})
-
+            
         except Exception as transcode_err:
             print(f"[KYRO] Transcode failed: {transcode_err}")
+            # Cleanup on failure
             try:
                 if os.path.exists(temp_input): os.remove(temp_input)
                 if os.path.exists(temp_output): os.remove(temp_output)
                 if os.path.exists(temp_dir): os.rmdir(temp_dir)
             except: pass
+            # Fall back to original quality
             print(f"[KYRO] Falling back to original quality for {filename}")
             r = requests.get(url, headers=headers, stream=True, timeout=60)
             return Response(stream_with_context(r.iter_content(chunk_size=8192)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
-
+        
     except Exception as e: 
         return jsonify({"error": str(e)}), 500
 
