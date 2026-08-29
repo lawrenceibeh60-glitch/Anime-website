@@ -197,7 +197,7 @@ def proxy_stream():
     try:
         headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://animeheaven.me/gate.php", "Accept": "video/*;q=0.9,*/*;q=0.8"}
         r = requests.get(url, headers=headers, stream=True, timeout=30)
-        return Response(stream_with_context(r.iter_content(chunk_size=8192)), content_type=r.headers.get("Content-Type", "video/mp4"), headers={"Accept-Ranges": "bytes", "Content-Length": r.headers.get("Content-Length", "")})
+        return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type=r.headers.get("Content-Type", "video/mp4"), headers={"Accept-Ranges": "bytes", "Content-Length": r.headers.get("Content-Length", ""), "Connection": "keep-alive", "Cache-Control": "public, max-age=3600"})
     except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route("/api/download")
@@ -212,13 +212,13 @@ def download():
         # If quality is original, just proxy the download
         if quality == "original" or quality not in ["720p", "480p", "360p"]:
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=8192)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", ""), "Connection": "keep-alive"})
         
         # For transcoded quality, check if ffmpeg is available
         if not FFMPEG_AVAILABLE:
             print(f"[KYRO] FFMPEG NOT AVAILABLE - returning original quality for {filename}")
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=8192)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", ""), "Connection": "keep-alive"})
         
         # ffmpeg is available - try transcoding
         print(f"[KYRO] Starting ffmpeg transcode: {filename} -> {quality}")
@@ -237,7 +237,7 @@ def download():
             total_size = 0
             max_size = 500 * 1024 * 1024  # 500MB limit for free tier
             with open(temp_input, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
+                for chunk in r.iter_content(chunk_size=262144):
                     total_size += len(chunk)
                     if total_size > max_size:
                         raise Exception("Video too large for free tier transcoding (limit: 500MB)")
@@ -271,7 +271,7 @@ def download():
             def generate():
                 with open(temp_output, "rb") as f:
                     while True:
-                        chunk = f.read(8192)
+                        chunk = f.read(262144)
                         if not chunk: break
                         yield chunk
                 # Cleanup
@@ -294,7 +294,7 @@ def download():
             # Fall back to original quality
             print(f"[KYRO] Falling back to original quality for {filename}")
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=8192)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", ""), "Connection": "keep-alive"})
         
     except Exception as e: 
         return jsonify({"error": str(e)}), 500
