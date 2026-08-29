@@ -273,9 +273,9 @@ def before_request():
     g.start_time = datetime.now()
     # Maintenance mode check - block visitors but allow admin API
     if SERVER_STOPPED and not request.path.startswith('/admin/'):
-        # Allow static assets and status check
-        if request.path in ['/api/status', '/admin/api/server-status']:
-            return
+        # Allow status check
+        if request.path == '/api/status':
+            return None
         return jsonify({
             "error": "Server is under maintenance",
             "maintenance": True,
