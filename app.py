@@ -4,6 +4,57 @@ import os
 import re
 import subprocess
 from bs4 import BeautifulSoup
+from datetime import datetime
+from user_agents import parse as ua_parse
+import json
+
+# ===== VISITOR TRACKING =====
+VISITOR_LOG = "/tmp/kyro_visitors.json"
+
+def log_visitor(request, action="page_view", details=""):
+    try:
+        ua_string = request.headers.get('User-Agent', '')
+        ua = ua_parse(ua_string)
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr) or 'unknown'
+
+        entry = {
+            "timestamp": datetime.now().isoformat(),
+            "ip": ip.split(',')[0].strip() if ',' in ip else ip,
+            "device": ua.device.family or "Unknown",
+            "brand": ua.device.brand or "Unknown",
+            "model": ua.device.model or "Unknown",
+            "os": f"{ua.os.family} {ua.os.version_string}" if ua.os.version_string else ua.os.family,
+            "browser": f"{ua.browser.family} {ua.browser.version_string}" if ua.browser.version_string else ua.browser.family,
+            "is_mobile": ua.is_mobile,
+            "is_tablet": ua.is_tablet,
+            "is_pc": ua.is_pc,
+            "screen_size": request.headers.get('Viewport-Width', 'unknown'),
+            "action": action,
+            "details": details,
+            "path": request.path,
+            "referrer": request.headers.get('Referer', 'direct')
+        }
+
+        # Append to log file
+        logs = []
+        if os.path.exists(VISITOR_LOG):
+            try:
+                with open(VISITOR_LOG, 'r') as f:
+                    logs = json.load(f)
+            except: pass
+
+        logs.append(entry)
+        # Keep last 5000 entries
+        logs = logs[-5000:]
+
+        with open(VISITOR_LOG, 'w') as f:
+            json.dump(logs, f, indent=2)
+
+    except Exception as e:
+        print(f"[KYRO LOG ERROR] {e}")
+
+# =====
+
 
 app = Flask(__name__)
 
@@ -123,6 +174,7 @@ def ah_search_anime(query):
 
 @app.route("/")
 def index():
+    log_visitor(request, "page_view", "Loaded homepage")
     try:
         with open("templates/index.html", "r") as f:
             html = f.read()
@@ -149,6 +201,8 @@ def status():
 @app.route("/api/chat", methods=["POST"])
 def chat():
     data = request.get_json()
+    msg = data.get("messages", [{}])[-1].get("content", "") if data.get("messages") else ""
+    log_visitor(request, "chat", f"Chat message: {msg[:50]}...")
     messages = data.get("messages", [])
     if not GROQ_API_KEY: return jsonify({"reply": "Set your GROQ_API_KEY environment variable to enable AI chat."})
     payload = {"model": "openai/gpt-oss-20b", "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages, "temperature": 0.8, "max_tokens": 1024}
@@ -166,12 +220,15 @@ def chat():
 @app.route("/api/search")
 def search():
     q = request.args.get("q", "")
+    if q:
+        log_visitor(request, "search", f"Searched for: {q}")
     if not q: return jsonify({"results": anilist_trending(20)})
     try: return jsonify({"results": anilist_search(q, 20)})
     except Exception as e: return jsonify({"results": [], "error": str(e)})
 
 @app.route("/api/anime/<int:anime_id>")
 def anime_detail(anime_id):
+    log_visitor(request, "view_anime", f"Viewed anime ID: {anime_id}")
     try: return jsonify(anilist_detail(anime_id))
     except Exception as e: return jsonify({"error": str(e)})
 
@@ -186,6 +243,7 @@ def ah_episodes_route(anime_id): return jsonify(ah_get_episodes(anime_id))
 
 @app.route("/api/stream/<ep_hash>")
 def stream(ep_hash):
+    log_visitor(request, "watch", f"Stream hash: {ep_hash}")
     url = ah_get_stream_url(ep_hash)
     if url: return jsonify({"url": url, "status": "ok"})
     return jsonify({"url": None, "status": "error", "message": "Stream not found"})
@@ -203,6 +261,8 @@ def proxy_stream():
 @app.route("/api/download")
 def download():
     url = request.args.get("url", "")
+    filename = request.args.get("filename", "episode.mp4")
+    log_visitor(request, "download", f"Downloaded: {filename}")
     filename = request.args.get("filename", "episode.mp4")
     quality = request.args.get("quality", "original")  # original, 720p, 480p, 360p
     if not url: return jsonify({"error": "No URL"}), 400
@@ -298,5 +358,55 @@ def download():
         
     except Exception as e: 
         return jsonify({"error": str(e)}), 500
+
+
+
+@app.route("/admin/logs")
+def admin_logs():
+    try:
+        if not os.path.exists(VISITOR_LOG):
+            return "<h1>No logs yet</h1><p>Wait for visitors...</p>"
+        with open(VISITOR_LOG, 'r') as f:
+            logs = json.load(f)
+
+        html = """<!DOCTYPE html><html><head><meta charset=utf-8>
+        <title>KYRO Visitor Logs</title>
+        <style>
+        body{font-family:monospace;background:#0a0f2e;color:#e3f2fd;padding:20px}
+        h1{color:#2962ff}table{width:100%;border-collapse:collapse;font-size:12px}
+        th{background:#2962ff;color:#fff;padding:8px;text-align:left;position:sticky;top:0}
+        td{padding:6px 8px;border-bottom:1px solid #1a237e}
+        tr:hover{background:rgba(41,98,255,0.1)}
+        .time{color:#90a4ae;width:160px}
+        .device{color:#ffd600}
+        .browser{color:#448aff}
+        .action{color:#00d26a;font-weight:bold}
+        .details{color:#b0bec5}
+        .mobile{color:#ef5350}
+        .pc{color:#00d26a}
+        .count{position:fixed;top:20px;right:20px;background:#2962ff;padding:10px 20px;border-radius:8px;font-weight:bold}
+        </style></head><body>
+        <h1>🕵️ KYRO Visitor Logs</h1>
+        <div class="count">Total Visits: """ + str(len(logs)) + """</div>
+        <table>
+        <tr><th>Time</th><th>IP</th><th>Device</th><th>OS</th><th>Browser</th><th>Type</th><th>Action</th><th>Details</th></tr>"""
+
+        for entry in reversed(logs[-200:]):  # Show last 200
+            device_type = "📱" if entry.get('is_mobile') else "💻" if entry.get('is_pc') else "📱" if entry.get('is_tablet') else "❓"
+            html += f"""<tr>
+                <td class="time">{entry.get('timestamp','')[:19]}</td>
+                <td>{entry.get('ip','')}</td>
+                <td class="device">{device_type} {entry.get('device','Unknown')}</td>
+                <td>{entry.get('os','')}</td>
+                <td class="browser">{entry.get('browser','')}</td>
+                <td>{'Mobile' if entry.get('is_mobile') else 'PC' if entry.get('is_pc') else 'Tablet' if entry.get('is_tablet') else 'Unknown'}</td>
+                <td class="action">{entry.get('action','')}</td>
+                <td class="details">{entry.get('details','')}</td>
+            </tr>"""
+
+        html += "</table></body></html>"
+        return html
+    except Exception as e:
+        return f"<h1>Error</h1><p>{e}</p>"
 
 if __name__ == "__main__": app.run(debug=True, host="0.0.0.0", port=5000)
