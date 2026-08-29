@@ -396,6 +396,115 @@ body{
   box-shadow:0 4px 20px rgba(0,0,0,0.5);
 }
 .key-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== PICTURE-IN-PICTURE ===== */
+.pip-btn{
+  background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:8px;padding:7px 14px;color:var(--text);font-size:12px;
+  cursor:pointer;transition:.2s;font-weight:700;
+}
+.pip-btn:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* ===== MINI PLAYER ===== */
+.mini-player{
+  position:fixed;bottom:70px;right:16px;z-index:85;
+  width:280px;background:var(--bg-card);border-radius:var(--radius-sm);
+  border:1px solid rgba(41,98,255,0.2);overflow:hidden;
+  box-shadow:0 10px 40px rgba(0,0,0,0.6),0 0 20px rgba(41,98,255,0.1);
+  display:none;animation:miniIn .3s cubic-bezier(.4,0,.2,1);
+}
+@keyframes miniIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.mini-player.show{display:block}
+.mini-player video{width:100%;height:157px;background:#000;display:block}
+.mini-player-info{
+  padding:8px 12px;display:flex;justify-content:space-between;align-items:center;
+  background:rgba(13,19,53,0.8);border-top:1px solid rgba(41,98,255,0.1);
+}
+.mini-player-info span{font-size:11px;color:var(--silver-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.mini-player-info button{
+  background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer;padding:2px 6px;
+}
+.mini-player-info button:hover{color:var(--yellow)}
+
+/* ===== REAL DOWNLOAD PROGRESS ===== */
+.dl-progress-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(5,7,20,0.85);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;z-index:1500;
+}
+.dl-progress-overlay.show{display:flex}
+.dl-progress-box{
+  background:var(--bg-card);border:1px solid rgba(41,98,255,0.2);
+  border-radius:var(--radius);padding:24px;width:90%;max-width:400px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+.dl-progress-box h3{font-size:14px;color:var(--silver-light);margin-bottom:16px}
+.dl-progress-bar{
+  height:6px;background:rgba(41,98,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:8px;
+}
+.dl-progress-bar div{
+  height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-glow));
+  border-radius:3px;transition:width .2s;
+}
+.dl-progress-text{font-size:12px;color:var(--text-dim);display:flex;justify-content:space-between}
+.dl-progress-text .pct{color:var(--yellow);font-weight:700}
+
+/* ===== SCHEDULE / CALENDAR ===== */
+.schedule-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px}
+.schedule-day{
+  background:var(--bg-card);border-radius:var(--radius-sm);padding:10px;
+  border:1px solid rgba(41,98,255,0.1);min-height:80px;
+}
+.schedule-day.today{border-color:rgba(255,214,0,0.3);background:rgba(255,214,0,0.05)}
+.schedule-day h5{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;text-align:center}
+.schedule-day.today h5{color:var(--yellow)}
+.schedule-day .sch-item{
+  font-size:9px;color:var(--text);padding:3px 5px;background:rgba(41,98,255,0.08);
+  border-radius:4px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;
+}
+.schedule-day .sch-item:hover{background:rgba(41,98,255,0.15)}
+.schedule-day .sch-item.new{border-left:2px solid var(--yellow)}
+
+/* ===== SHARE ===== */
+.share-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.share-bar button{
+  background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:8px;padding:7px 14px;color:var(--text);font-size:11px;
+  cursor:pointer;transition:.2s;font-weight:700;
+}
+.share-bar button:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* ===== COMMENTS ===== */
+.comments-section{margin-top:20px}
+.comments-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;max-height:300px;overflow-y:auto}
+.comment-item{
+  background:var(--bg-card);border:1px solid rgba(41,98,255,0.1);
+  border-radius:var(--radius-sm);padding:10px 12px;
+}
+.comment-item .c-name{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:2px}
+.comment-item .c-text{font-size:12px;color:var(--text);line-height:1.4}
+.comment-item .c-time{font-size:9px;color:var(--text-dim);margin-top:4px}
+.comment-input{display:flex;gap:8px}
+.comment-input input{
+  flex:1;background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:12px;outline:none;
+}
+.comment-input input:focus{border-color:var(--blue)}
+.comment-input button{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));border:none;
+  border-radius:var(--radius-sm);padding:9px 16px;color:#fff;font-weight:700;
+  cursor:pointer;font-size:11px;
+}
+
+/* ===== SOURCE FALLBACK ===== */
+.source-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(0,211,106,0.1);color:var(--green);
+  padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;
+  border:1px solid rgba(0,211,106,0.2);
+}
+.source-badge.fallback{background:rgba(255,214,0,0.1);color:var(--yellow);border-color:rgba(255,214,0,0.2)}
+
 .player-overlay{
   position:fixed;top:0;left:0;right:0;bottom:0;
   background:rgba(5,7,20,0.96);backdrop-filter:blur(10px);
@@ -602,24 +711,33 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
         <div class="mini-row" id="recently-watched-row"></div>
       </div>
 
-      <div class="section-title" id="section-title">Trending Now</div>
+      <div class="section-title">This Week</div><div class="schedule-grid" id="schedule-grid"></div><div class="section-title" id="section-title">Trending Now</div>
       <div class="anime-grid" id="anime-grid"></div>
     </div>
 
     <div id="detail-view" class="hidden">
       <button class="back-btn" onclick="showSearch()">&#8592; Back</button>
       <div class="anime-detail" id="detail-content"></div>
+      <div class="share-bar" id="share-bar" style="display:none">
+        <button onclick="shareAnime()">&#128279; Share Anime</button>
+        <button onclick="copyTitle()">&#128203; Copy Title</button>
+      </div>
       <div id="ah-status" class="status-msg" style="display:none"></div>
       <div class="ah-search-box" id="ah-search-box" style="display:none">
         <input type="text" id="ah-search-input" placeholder="Search AnimeHeaven manually...">
         <button onclick="manualAhSearch()">Search AH</button>
       </div>
-      <div class="section-title">Episodes</div>
+      <div class="section-title">Episodes <span id="source-badge" class="source-badge" style="display:none;margin-left:8px">AnimeHeaven</span></div>
       <div class="episode-list" id="episode-list"></div>
+      <div class="comments-section" id="comments-section" style="display:none">
+        <div class="section-title">Comments</div>
+        <div class="comments-list" id="comments-list"></div>
+        <div class="comment-input">
+          <input type="text" id="comment-input" placeholder="Write a comment..." onkeypress="if(event.key==='Enter')addComment()">
+          <button onclick="addComment()">Post</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-
 <!-- Download Queue -->
 <button class="queue-toggle" id="queue-toggle" onclick="toggleQueue()">
   &#11015;
@@ -634,6 +752,19 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
 </div>
 
 <!-- Player -->
+<!-- Download Queue -->
+<button class="queue-toggle" id="queue-toggle" onclick="toggleQueue()">
+  &#11015;
+  <span class="badge hidden" id="queue-badge">0</span>
+</button>
+<div class="queue-panel" id="queue-panel">
+  <div class="queue-header">
+    <h4>Downloads</h4>
+    <button onclick="toggleQueue()">&times;</button>
+  </div>
+  <div class="queue-list" id="queue-list"></div>
+</div>
+
 <div id="player-overlay" class="player-overlay hidden">
   <button class="player-close" onclick="closePlayer()">&times;</button>
   <div class="player-box">
@@ -641,6 +772,8 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
       <h3 id="player-title">Episode</h3>
       <div class="player-actions">
         <button class="dl" onclick="downloadCurrent()">&#11015; Download</button>
+        <button class="pip-btn" onclick="togglePiP()">&#128250; PiP</button>
+        <button onclick="shareEpisode()">&#128279; Share</button>
         <button onclick="nextEpisode()">Next &#9654;</button>
       </div>
     </div>
@@ -670,10 +803,30 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
   </div>
 </div>
 
+<!-- Mini Player -->
+<div class="mini-player" id="mini-player">
+  <video id="mini-video" playsinline></video>
+  <div class="mini-player-info">
+    <span id="mini-title">Episode</span>
+    <button onclick="miniPlayerBack()" title="Back to player">&#9650;</button>
+    <button onclick="closeMiniPlayer()" title="Close">&times;</button>
+  </div>
+</div>
+
+<!-- Download Progress Overlay -->
+<div class="dl-progress-overlay" id="dl-progress-overlay">
+  <div class="dl-progress-box">
+    <h3 id="dl-progress-title">Downloading...</h3>
+    <div class="dl-progress-bar"><div id="dl-progress-fill" style="width:0%"></div></div>
+    <div class="dl-progress-text">
+      <span id="dl-progress-size">0 MB / 0 MB</span>
+      <span class="pct" id="dl-progress-pct">0%</span>
+    </div>
+  </div>
+</div>
 <!-- Toast -->
 <div id="toast" class="toast"></div>
 <div id="key-toast" class="key-toast"></div>
-
 <script>
 
 // ===== STATE =====
@@ -920,7 +1073,7 @@ async function loadTrending(){
     if(currentTab==="trending")renderAnimeGrid(filterByGenre(trendingData));
   }catch(e){grid.innerHTML='<div class="loading">Failed to load.</div>';}
 }
-loadTrending();
+loadTrending();renderSchedule();checkUrlParams();
 
 function renderAnimeGrid(list){
   const grid=document.getElementById("anime-grid");
@@ -1016,7 +1169,7 @@ async function findAnimeHeavenEpisodes(anime){
         if(epData.episodes?.length){
           currentAhId=ahId;currentEpisodes=epData.episodes;
           setStatus(`Found ${epData.episodes.length} episodes on AnimeHeaven!`,`ok`);
-          renderEpisodes(currentEpisodes);found=true;break;
+          renderEpisodes(currentEpisodes);document.getElementById("source-badge").style.display="inline-flex";found=true;break;
         }
       }
     }catch(e){}
@@ -1103,6 +1256,7 @@ async function playEpisode(index){
       showToast("Now playing: "+ep.title,"success");
       addRecent(currentAnime,index);
       saveProgress(currentAnime.id,index);
+      history.replaceState(null,"","?anime="+currentAnime.id+"&ep="+index);
     }else{showToast("Stream not found on server","error");}
   }catch(e){showToast("Error loading stream: "+e.message,"error");}
 }
@@ -1235,7 +1389,7 @@ document.addEventListener("keydown",function(e){
 
 // Init auto-next listener
 setupAutoNext();
-function showSearch(){document.getElementById("search-view").classList.remove("hidden");document.getElementById("detail-view").classList.add("hidden");currentEpisodes=[];currentAhId="";}
+function showSearch(){document.getElementById("search-view").classList.remove("hidden");document.getElementById("detail-view").classList.add("hidden");currentEpisodes=[];currentAhId="";history.replaceState(null,"","/");}
 
 // ===== AI CHAT =====
 async function sendChat(){
@@ -1261,4 +1415,216 @@ async function sendChat(){
 
 function fmt(text){return esc(text).replace(/\n/g,"<br>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");}
 function esc(text){if(!text)return"";const d=document.createElement("div");d.textContent=text;return d.innerHTML;}
+
+// ===== FEATURE 1: PICTURE-IN-PICTURE =====
+async function togglePiP(){
+  const v=document.getElementById("video-player");
+  try{
+    if(document.pictureInPictureElement){
+      await document.exitPictureInPicture();
+      showToast("Exited PiP");
+    }else{
+      await v.requestPictureInPicture();
+      showToast("Picture-in-Picture active","success");
+    }
+  }catch(e){showToast("PiP not supported in this browser","error");}
+}
+
+// ===== FEATURE 2: MINI PLAYER =====
+let miniPlayerActive=false;
+function showMiniPlayer(){
+  const v=document.getElementById("video-player");
+  const mv=document.getElementById("mini-video");
+  if(!v.src||v.paused)return;
+  mv.src=v.src;
+  mv.currentTime=v.currentTime;
+  mv.play();
+  document.getElementById("mini-title").textContent=document.getElementById("player-title").textContent;
+  document.getElementById("mini-player").classList.add("show");
+  miniPlayerActive=true;
+  closePlayer();
+}
+function miniPlayerBack(){
+  const v=document.getElementById("video-player");
+  const mv=document.getElementById("mini-video");
+  v.src=mv.src;
+  v.currentTime=mv.currentTime;
+  document.getElementById("player-overlay").classList.remove("hidden");
+  v.play();
+  closeMiniPlayer();
+}
+function closeMiniPlayer(){
+  document.getElementById("mini-player").classList.remove("show");
+  document.getElementById("mini-video").pause();
+  document.getElementById("mini-video").src="";
+  miniPlayerActive=false;
+}
+
+// ===== FEATURE 3: REAL DOWNLOAD PROGRESS =====
+async function dlWithProgress(index){
+  const ep=currentEpisodes[index];
+  if(!ep||!ep.hash){showToast("No download link","error");return;}
+  const qualitySelect=document.getElementById("dl-quality-"+index);
+  const quality=qualitySelect?qualitySelect.value:"original";
+
+  const baseName=((currentAnime?.title_english||currentAnime?.title||"episode").replace(/[^a-z0-9]/gi,"_"))+"_EP"+ep.number;
+  const fname=quality==="original"?baseName+".mp4":baseName+"_"+quality+".mp4";
+
+  document.getElementById("dl-progress-title").textContent="Downloading: "+fname;
+  document.getElementById("dl-progress-overlay").classList.add("show");
+  document.getElementById("dl-progress-fill").style.width="0%";
+  document.getElementById("dl-progress-pct").textContent="0%";
+  document.getElementById("dl-progress-size").textContent="Starting...";
+
+  try{
+    const r=await fetch("/api/stream/"+ep.hash);
+    const data=await r.json();
+    if(!data.url){showToast("Download URL not found","error");document.getElementById("dl-progress-overlay").classList.remove("show");return;}
+
+    const response=await fetch("/api/download?url="+encodeURIComponent(data.url)+"&filename="+encodeURIComponent(fname)+"&quality="+quality);
+    const reader=response.body.getReader();
+    const contentLength=+response.headers.get("Content-Length")||0;
+    let received=0;
+    const chunks=[];
+
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      chunks.push(value);
+      received+=value.length;
+      if(contentLength){
+        const pct=Math.round((received/contentLength)*100);
+        document.getElementById("dl-progress-fill").style.width=pct+"%";
+        document.getElementById("dl-progress-pct").textContent=pct+"%";
+        document.getElementById("dl-progress-size").textContent=formatBytes(received)+" / "+formatBytes(contentLength);
+      }else{
+        document.getElementById("dl-progress-size").textContent=formatBytes(received)+" downloaded";
+      }
+    }
+
+    // Assemble and download
+    const blob=new Blob(chunks);
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Download complete: "+fname,"success");
+  }catch(e){showToast("Download failed: "+e.message,"error");}
+  document.getElementById("dl-progress-overlay").classList.remove("show");
+}
+function formatBytes(bytes){
+  if(bytes===0)return"0 B";
+  const k=1024;const sizes=["B","KB","MB","GB"];
+  const i=Math.floor(Math.log(bytes)/Math.log(k));
+  return parseFloat((bytes/Math.pow(k,i)).toFixed(1))+" "+sizes[i];
+}
+
+// ===== FEATURE 4: ANIME SCHEDULE =====
+const WEEKDAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const SCHEDULE_ANIME=[
+  {title:"One Piece",day:0,time:"09:00",new:true},
+  {title:"Jujutsu Kaisen",day:0,time:"23:00",new:false},
+  {title:"Demon Slayer",day:1,time:"22:00",new:true},
+  {title:"My Hero Academia",day:2,time:"16:30",new:false},
+  {title:"Attack on Titan",day:3,time:"00:00",new:true},
+  {title:"Spy x Family",day:4,time:"22:00",new:false},
+  {title:"Chainsaw Man",day:5,time:"00:00",new:true},
+  {title:"Naruto",day:6,time:"19:00",new:false},
+  {title:"Bleach",day:0,time:"20:00",new:false},
+  {title:"Hunter x Hunter",day:2,time:"10:00",new:true},
+];
+function renderSchedule(){
+  const grid=document.getElementById("schedule-grid");
+  if(!grid)return;
+  const today=new Date().getDay();
+  grid.innerHTML=WEEKDAYS.map((day,i)=>{
+    const items=SCHEDULE_ANIME.filter(a=>a.day===i);
+    return `<div class="schedule-day ${i===today?'today':''}">
+      <h5>${day}</h5>
+      ${items.map(it=>`<div class="sch-item ${it.new?'new':''}" onclick="searchAnime('${esc(it.title)}')">${esc(it.title)} ${it.time}</div>`).join("")}
+    </div>`;
+  }).join("");
+}
+function searchAnime(title){
+  document.getElementById("search-input").value=title;
+  doSearch();
+}
+
+// ===== FEATURE 5: SHARE EPISODE LINKS =====
+function shareEpisode(){
+  if(!currentAnime||!currentEpisodes[currentEpIndex]){showToast("No episode to share","error");return;}
+  const ep=currentEpisodes[currentEpIndex];
+  const url=window.location.origin+"?anime="+currentAnime.id+"&ep="+currentEpIndex;
+  navigator.clipboard.writeText(url).then(()=>{
+    showToast("Link copied! Share it anywhere.","success");
+  }).catch(()=>{
+    // Fallback
+    const ta=document.createElement("textarea");ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
+    showToast("Link copied!","success");
+  });
+}
+function checkUrlParams(){
+  const params=new URLSearchParams(window.location.search);
+  const animeId=params.get("anime");
+  const epIndex=params.get("ep");
+  if(animeId){
+    openAnime(parseInt(animeId)).then(()=>{
+      if(epIndex!==null&&currentEpisodes[parseInt(epIndex)]){
+        setTimeout(()=>playEpisode(parseInt(epIndex)),1000);
+      }
+    });
+  }
+}
+
+// ===== FEATURE 6: COMMENTS =====
+function getComments(animeId){return LS.get("comments_"+animeId,[]);}
+function addComment(){
+  const input=document.getElementById("comment-input");
+  const text=input.value.trim();if(!text)return;
+  if(!currentAnime){showToast("Open an anime first","error");return;}
+  const comments=getComments(currentAnime.id);
+  comments.unshift({name:"Guest",text:text,time:new Date().toLocaleString()});
+  LS.set("comments_"+currentAnime.id,comments.slice(0,50));
+  input.value="";renderComments();
+}
+function renderComments(){
+  const list=document.getElementById("comments-list");
+  if(!list||!currentAnime)return;
+  const comments=getComments(currentAnime.id);
+  if(!comments.length){list.innerHTML='<div style="text-align:center;padding:20px;color:#666;font-size:12px">No comments yet. Be the first!</div>';return;}
+  list.innerHTML=comments.map(c=>`<div class="comment-item">
+    <div class="c-name">${esc(c.name)}</div>
+    <div class="c-text">${esc(c.text)}</div>
+    <div class="c-time">${esc(c.time)}</div>
+  </div>`).join("");
+}
+
+// ===== FEATURE 7: FALLBACK SOURCES =====
+const FALLBACK_SOURCES=[
+  {name:"AnimeHeaven",searchUrl:"/api/animeheaven/search?q="},
+];
+async function tryFallbackSources(anime){
+  showToast("Trying alternative sources...");
+  // In a real implementation, this would try multiple scrapers
+  // For now, we just retry AnimeHeaven with different search terms
+  const altTitles=[anime.title_english,anime.title,anime.title?.split(":")[0],anime.title?.split(" ")[0]].filter(Boolean);
+  for(const title of altTitles){
+    try{
+      const r=await fetch("/api/animeheaven/search?q="+encodeURIComponent(title));
+      const data=await r.json();
+      if(data.results?.length){
+        const ahId=data.results[0].id;
+        const r2=await fetch("/api/animeheaven/episodes/"+ahId);
+        const epData=await r2.json();
+        if(epData.episodes?.length){
+          currentAhId=ahId;currentEpisodes=epData.episodes;
+          setStatus(`Found ${epData.episodes.length} episodes via fallback!`,`ok`);
+          renderEpisodes(currentEpisodes);
+          return true;
+        }
+      }
+    }catch(e){}
+  }
+  return false;
+}
 </script></body></html>
