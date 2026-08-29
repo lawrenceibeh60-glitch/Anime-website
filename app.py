@@ -1,4 +1,5 @@
-from flask import Flask, render_template_string, jsonify, request, Response, stream_with_context
+from flask import Flask, render_template_string, jsonify, request, Response, stream_with_context, send_from_directory
+from flask_cors import CORS
 import requests
 import os
 import re
@@ -57,6 +58,7 @@ def log_visitor(request, action="page_view", details=""):
 
 
 app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "*"}, r"/admin/*": {"origins": "*"}})
 
 # ===== FFMPEG STATUS CHECK (runs on startup) =====
 FFMPEG_AVAILABLE = False
@@ -422,5 +424,10 @@ def admin_logs_json():
         return jsonify({"visits": logs, "total": len(logs)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/admin/dashboard")
+def admin_dashboard():
+    """Serve the spy dashboard HTML"""
+    return send_from_directory('templates', 'dashboard.html')
 
 if __name__ == "__main__": app.run(debug=True, host="0.0.0.0", port=5000)
