@@ -764,7 +764,6 @@ async function sendChat(){
   box.scrollTop=box.scrollHeight;
 }
 
-function fmt(text){return esc(text).replace(/
-/g,"<br>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");}
+function fmt(text){return esc(text).replace(/\n/g,"<br>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");}
 function esc(text){if(!text)return"";const d=document.createElement("div");d.textContent=text;return d.innerHTML;}
 </script></body></html>
