@@ -541,7 +541,7 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
   <div class="logo">KYRO<span>AI ANIME</span></div>
   <div class="header-right">
     <div class="status-bar">
-      <div class="status-item"><span class="status-dot off" id="dot-ah"></span>AH</div>
+      <div class="status-item"><span class="status-dot off" id="dot-ah"></span>Stream</div>
       <div class="status-item"><span class="status-dot off" id="dot-anilist"></span>AniList</div>
       <div class="status-item"><span class="status-dot off" id="dot-groq"></span>AI</div>
     </div>
@@ -611,8 +611,8 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
       <div class="anime-detail" id="detail-content"></div>
       <div id="ah-status" class="status-msg" style="display:none"></div>
       <div class="ah-search-box" id="ah-search-box" style="display:none">
-        <input type="text" id="ah-search-input" placeholder="Search AnimeHeaven manually...">
-        <button onclick="manualAhSearch()">Search AH</button>
+        <input type="text" id="ah-search-input" placeholder="Search Stream manually...">
+        <button onclick="manualAhSearch()">Search Stream</button>
       </div>
       <div class="section-title">Episodes</div>
       <div class="episode-list" id="episode-list"></div>
@@ -640,8 +640,7 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
     <div class="player-header">
       <h3 id="player-title">Episode</h3>
       <div class="player-actions">
-        <button class="dl" onclick="downloadCurrent()">&#11015; Download</button>
-        <button class="dl" onclick="turboDownloadCurrent()" title="Multi-threaded fast download" style="background:linear-gradient(135deg,#ff6d00,#ff9100);border-color:transparent">&#9889; Turbo</button>
+        <button class="dl" onclick="downloadCurrent()">&#11015; Download</button><button class="dl" onclick="turboDownloadCurrent()" title="Multi-threaded fast download" style="background:linear-gradient(135deg,#ff6d00,#ff9100);border-color:transparent">&#9889; Turbo</button>
         <button onclick="nextEpisode()">Next &#9654;</button>
       </div>
     </div>
@@ -995,7 +994,7 @@ async function openAnime(id){
         <p>${esc(anime.synopsis||"No description.")}</p>
       </div>
     `;
-    setStatus("Searching AnimeHeaven...","warn");
+    setStatus("Searching Stream...","warn");
     await findAnimeHeavenEpisodes(anime);
   }catch(e){
     document.getElementById("detail-content").innerHTML='<div class="loading">Error loading anime.</div>';
@@ -1007,7 +1006,7 @@ async function findAnimeHeavenEpisodes(anime){
   let found=false;
   for(const searchTitle of searchTitles){
     try{
-      setStatus(`Searching AnimeHeaven for: "${searchTitle}"...`,`warn`);
+      setStatus(`Searching Stream for: "${searchTitle}"...`,`warn`);
       const r=await fetch("/api/animeheaven/search?q="+encodeURIComponent(searchTitle));
       const ah=await r.json();
       if(ah.results?.length){
@@ -1016,14 +1015,14 @@ async function findAnimeHeavenEpisodes(anime){
         const epData=await r2.json();
         if(epData.episodes?.length){
           currentAhId=ahId;currentEpisodes=epData.episodes;
-          setStatus(`Found ${epData.episodes.length} episodes on AnimeHeaven!`,`ok`);
+          setStatus(`Found ${epData.episodes.length} episodes on Stream!`,`ok`);
           renderEpisodes(currentEpisodes);found=true;break;
         }
       }
     }catch(e){}
   }
   if(!found){
-    setStatus("AnimeHeaven doesn't have this anime yet. Try searching manually below.","bad");
+    setStatus("Stream doesn't have this anime yet. Try searching manually below.","bad");
     document.getElementById("ah-search-box").style.display="flex";
     document.getElementById("ah-search-input").value=anime.title_english||anime.title;
     generateGenericEpisodes(anime.episodes);
@@ -1033,7 +1032,7 @@ async function findAnimeHeavenEpisodes(anime){
 async function manualAhSearch(){
   const q=document.getElementById("ah-search-input").value.trim();
   if(!q)return;
-  setStatus(`Manually searching AnimeHeaven for: "${q}"...`,`warn`);
+  setStatus(`Manually searching Stream for: "${q}"...`,`warn`);
   try{
     const r=await fetch("/api/animeheaven/search?q="+encodeURIComponent(q));
     const ah=await r.json();
@@ -1046,8 +1045,8 @@ async function manualAhSearch(){
         setStatus(`Found ${epData.episodes.length} episodes!`,`ok`);
         renderEpisodes(currentEpisodes);
       }else{setStatus("Found anime but no episodes listed.","bad");}
-    }else{setStatus("No results on AnimeHeaven for this search.","bad");}
-  }catch(e){setStatus("Error searching AnimeHeaven.","bad");}
+    }else{setStatus("No results on Stream for this search.","bad");}
+  }catch(e){setStatus("Error searching Stream.","bad");}
 }
 
 function generateGenericEpisodes(count){
@@ -1067,7 +1066,7 @@ function renderEpisodes(eps){
         <div class="ep-num">${ep.number}</div>
         <div class="ep-info">
           <div class="ep-title">${esc(ep.title)}</div>
-          <div class="ep-sub ${ep.hash?'ok':'bad'}">${ep.hash?"Stream & Download Ready":"Not available on AnimeHeaven"}</div>
+          <div class="ep-sub ${ep.hash?'ok':'bad'}">${ep.hash?"Stream & Download Ready":"Not available on Stream"}</div>
           ${prog&&prog.epIndex===i?'<div class="ep-progress">Last watched</div>':''}
         </div>
       </div>
@@ -1273,49 +1272,36 @@ async function turboDownloadCurrent(){
     const r=await fetch("/api/stream/"+ep.hash);
     const data=await r.json();
     if(!data.url){showToast("Stream not found","error");return;}
-
     const baseName=((currentAnime?.title_english||currentAnime?.title||"episode").replace(/[^a-z0-9]/gi,"_"))+"_EP"+ep.number+".mp4";
     await turboDownload(data.url, baseName);
   }catch(e){showToast("Turbo download failed: "+e.message,"error");}
 }
 
 async function turboDownload(url, filename){
-  const CHUNKS=8; // 8 parallel connections
-  const MIN_CHUNK=2*1024*1024; // 2MB minimum chunk size
-
-  // Get file size first
+  const CHUNKS=8;
+  const MIN_CHUNK=2*1024*1024;
   const head=await fetch("/api/proxy-stream?url="+encodeURIComponent(url),{method:"HEAD"});
   const len=parseInt(head.headers.get("Content-Length")||"0");
   if(!len){showToast("Cannot determine file size","error");return;}
-
   const chunkSize=Math.max(MIN_CHUNK, Math.ceil(len/CHUNKS));
   const promises=[];
   const chunks=[];
-
   showToast("Turbo downloading with "+CHUNKS+" connections...","success");
-
   for(let i=0;i<CHUNKS;i++){
     const start=i*chunkSize;
     const end=Math.min(start+chunkSize-1, len-1);
     promises.push((async()=>{
-      const resp=await fetch("/api/proxy-stream?url="+encodeURIComponent(url),{
-        headers:{"Range":"bytes="+start+"-"+end}
-      });
+      const resp=await fetch("/api/proxy-stream?url="+encodeURIComponent(url),{headers:{"Range":"bytes="+start+"-"+end}});
       const buf=await resp.arrayBuffer();
       chunks[i]=new Uint8Array(buf);
     })());
   }
-
   await Promise.all(promises);
-
-  // Merge chunks
   let totalLen=0;
   for(const c of chunks)totalLen+=c.length;
   const merged=new Uint8Array(totalLen);
   let offset=0;
   for(const c of chunks){merged.set(c,offset);offset+=c.length;}
-
-  // Trigger download
   const blob=new Blob([merged],{type:"video/mp4"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);

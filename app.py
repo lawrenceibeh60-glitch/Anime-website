@@ -212,13 +212,13 @@ def download():
         # If quality is original, just proxy the download
         if quality == "original" or quality not in ["720p", "480p", "360p"]:
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", ""), "Connection": "keep-alive"})
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
         
         # For transcoded quality, check if ffmpeg is available
         if not FFMPEG_AVAILABLE:
             print(f"[KYRO] FFMPEG NOT AVAILABLE - returning original quality for {filename}")
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", ""), "Connection": "keep-alive"})
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
         
         # ffmpeg is available - try transcoding
         print(f"[KYRO] Starting ffmpeg transcode: {filename} -> {quality}")
@@ -294,7 +294,7 @@ def download():
             # Fall back to original quality
             print(f"[KYRO] Falling back to original quality for {filename}")
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", ""), "Connection": "keep-alive"})
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
         
     except Exception as e: 
         return jsonify({"error": str(e)}), 500
