@@ -689,11 +689,20 @@ def admin_logs_json():
 @app.route("/admin/dashboard")
 def admin_dashboard():
     try:
-        with open("kyro_spy_dashboard.html", "r") as f:
+        with open("templates/dashboard.html", "r") as f:
             html = f.read()
         return render_template_string(html)
     except:
-        return "<h1>Dashboard not found</h1><p>Make sure kyro_spy_dashboard.html is in the project root.</p>", 404
+        return "<h1>Dashboard not found</h1><p>Make sure templates/dashboard.html exists.</p>", 404
+
+@app.route("/admin/remote")
+def admin_remote():
+    try:
+        with open("templates/remote_controller.html", "r") as f:
+            html = f.read()
+        return render_template_string(html)
+    except:
+        return "<h1>Remote controller not found</h1><p>Make sure templates/remote_controller.html exists.</p>", 404
 
 # ===== ADMIN API =====
 
