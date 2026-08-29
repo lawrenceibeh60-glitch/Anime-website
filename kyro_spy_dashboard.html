@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KYRO SPY - Visitor Dashboard</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background:#050714;color:#e3f2fd;min-height:100vh;
+    padding:16px;
+  }
+  .header{
+    text-align:center;padding:20px 0;border-bottom:1px solid #1a237e;margin-bottom:20px;
+  }
+  .header h1{
+    font-size:24px;background:linear-gradient(90deg,#2962ff,#ffd600);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    font-weight:900;letter-spacing:2px;
+  }
+  .header p{color:#90a4ae;font-size:12px;margin-top:6px}
+  .stats-bar{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;
+  }
+  .stat-card{
+    background:#0a0f2e;border:1px solid #1a237e;border-radius:12px;padding:16px;text-align:center;
+  }
+  .stat-card .number{
+    font-size:28px;font-weight:900;color:#2962ff;
+  }
+  .stat-card .label{
+    font-size:11px;color:#90a4ae;text-transform:uppercase;letter-spacing:1px;margin-top:4px;
+  }
+  .section-title{
+    font-size:14px;font-weight:800;color:#ffd600;margin:20px 0 12px;
+    text-transform:uppercase;letter-spacing:1px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .section-title::before{
+    content:'';width:4px;height:16px;background:linear-gradient(180deg,#2962ff,#ffd600);border-radius:2px;
+  }
+  .live-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(0,210,106,0.15);color:#00d26a;
+    padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;
+    border:1px solid rgba(0,210,106,0.3);
+    margin-left:auto;
+  }
+  .live-badge .dot{
+    width:8px;height:8px;background:#00d26a;border-radius:50%;
+    animation:pulse 1.5s infinite;
+  }
+  @keyframes pulse{
+    0%{opacity:1;transform:scale(1)}
+    50%{opacity:0.4;transform:scale(0.8)}
+    100%{opacity:1;transform:scale(1)}
+  }
+  table{
+    width:100%;border-collapse:collapse;font-size:13px;
+    background:#0a0f2e;border:1px solid #1a237e;border-radius:12px;overflow:hidden;
+  }
+  th{
+    background:#0d1335;color:#b0bec5;font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:1px;padding:12px 14px;text-align:left;
+    border-bottom:1px solid #1a237e;
+  }
+  td{
+    padding:12px 14px;border-bottom:1px solid rgba(26,35,126,0.3);
+    color:#e3f2fd;
+  }
+  tr:hover{background:rgba(41,98,255,0.08)}
+  tr.new-row{
+    animation:flashIn 0.8s ease;
+    background:rgba(0,210,106,0.05);
+  }
+  @keyframes flashIn{
+    from{background:rgba(0,210,106,0.3)}
+    to{background:rgba(0,210,106,0.05)}
+  }
+  .device-cell{display:flex;align-items:center;gap:8px}
+  .device-icon{
+    width:32px;height:32px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:16px;
+    background:#0d1335;border:1px solid #1a237e;
+  }
+  .device-info{line-height:1.4}
+  .device-name{font-weight:700;color:#eceff1;font-size:13px}
+  .device-meta{font-size:11px;color:#90a4ae}
+  .ip-badge{
+    background:#0d1335;border:1px solid #1a237e;
+    padding:4px 10px;border-radius:6px;font-size:12px;
+    font-family:monospace;color:#448aff;
+  }
+  .type-badge{
+    display:inline-block;padding:3px 10px;border-radius:20px;
+    font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;
+  }
+  .type-mobile{background:rgba(41,98,255,0.15);color:#448aff;border:1px solid rgba(41,98,255,0.3)}
+  .type-pc{background:rgba(0,210,106,0.15);color:#00d26a;border:1px solid rgba(0,210,106,0.3)}
+  .type-tablet{background:rgba(255,214,0,0.15);color:#ffd600;border:1px solid rgba(255,214,0,0.3)}
+  .type-other{background:rgba(176,190,197,0.15);color:#b0bec5;border:1px solid rgba(176,190,197,0.3)}
+  .action-text{font-size:12px}
+  .action-search{color:#ffd600}
+  .action-watch{color:#00d26a}
+  .action-download{color:#ef5350}
+  .action-chat{color:#b0bec5}
+  .action-view{color:#448aff}
+  .action-home{color:#90a4ae}
+  .time-text{font-size:11px;color:#90a4ae;font-family:monospace}
+  .empty-state{text-align:center;padding:40px;color:#90a4ae}
+  .empty-state svg{width:48px;height:48px;opacity:0.3;margin-bottom:12px}
+  .refresh-info{text-align:center;color:#90a4ae;font-size:11px;margin-top:12px}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{
+    background:#0a0f2e;border:1px solid #1a237e;border-radius:8px;
+    padding:8px 16px;color:#90a4ae;font-size:12px;font-weight:700;
+    cursor:pointer;transition:0.2s;
+  }
+  .tab:hover{border-color:#2962ff;color:#e3f2fd}
+  .tab.active{background:#2962ff;color:#fff;border-color:#2962ff}
+  .hidden{display:none}
+  @media(max-width:900px){
+    .stats-bar{grid-template-columns:repeat(2,1fr)}
+    table{font-size:11px}
+    th,td{padding:8px 10px}
+    .device-icon{width:28px;height:28px;font-size:14px}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>KYRO SPY</h1>
+  <p>Visitor Monitor Dashboard</p>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="number" id="stat-total">0</div>
+    <div class="label">Total Visits</div>
+  </div>
+  <div class="stat-card">
+    <div class="number" id="stat-mobile">0</div>
+    <div class="label">Mobile</div>
+  </div>
+  <div class="stat-card">
+    <div class="number" id="stat-pc">0</div>
+    <div class="label">Desktop</div>
+  </div>
+  <div class="stat-card">
+    <div class="number" id="stat-new">0</div>
+    <div class="label">New This Min</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('all')">All Activity</button>
+  <button class="tab" onclick="switchTab('search')">Searches</button>
+  <button class="tab" onclick="switchTab('watch')">Watches</button>
+  <button class="tab" onclick="switchTab('download')">Downloads</button>
+  <button class="tab" onclick="switchTab('chat')">Chat</button>
+  <div class="live-badge"><span class="dot"></span>LIVE</div>
+</div>
+
+<div class="section-title">Recent Activity</div>
+
+<div id="table-container">
+  <table id="visitor-table">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>IP Address</th>
+        <th>Device</th>
+        <th>Type</th>
+        <th>Browser</th>
+        <th>OS</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      <tr><td colspan="7"><div class="empty-state">Loading visitors...</div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="refresh-info">Auto-refreshing every 3 seconds</div>
+
+<script>
+// CONFIG - CHANGE THIS TO YOUR APP URL
+const API_URL = "https://anime-website-sjz2.onrender.com/admin/logs-json";
+
+let seenIds = new Set();
+let currentTab = 'all';
+
+function getDeviceEmoji(entry) {
+  const d = (entry.device || "").toLowerCase();
+  const m = (entry.model || "").toLowerCase();
+  const b = (entry.brand || "").toLowerCase();
+  if (d.includes("iphone") || m.includes("iphone")) return "📱";
+  if (d.includes("ipad") || m.includes("ipad")) return "📱";
+  if (b.includes("samsung") || m.includes("galaxy")) return "📱";
+  if (m.includes("pixel")) return "📱";
+  if (b.includes("xiaomi") || m.includes("redmi")) return "📱";
+  if (b.includes("huawei") || m.includes("honor")) return "📱";
+  if (b.includes("oneplus")) return "📱";
+  if (b.includes("oppo") || b.includes("vivo") || b.includes("realme")) return "📱";
+  if (b.includes("nokia")) return "📱";
+  if (b.includes("lg")) return "📱";
+  if (b.includes("sony") || m.includes("xperia")) return "📱";
+  if (b.includes("motorola") || m.includes("moto")) return "📱";
+  if (entry.is_tablet) return "📱";
+  if (entry.is_pc) {
+    if (d.includes("mac") || m.includes("macbook")) return "💻";
+    return "🖥️";
+  }
+  if (entry.is_mobile) return "📱";
+  return "❓";
+}
+
+function getDeviceName(entry) {
+  if (entry.brand && entry.model && entry.brand !== "Unknown") {
+    return entry.brand + " " + entry.model;
+  }
+  if (entry.device && entry.device !== "Unknown") return entry.device;
+  return "Unknown";
+}
+
+function getTypeClass(entry) {
+  if (entry.is_mobile) return "type-mobile";
+  if (entry.is_pc) return "type-pc";
+  if (entry.is_tablet) return "type-tablet";
+  return "type-other";
+}
+
+function getTypeLabel(entry) {
+  if (entry.is_mobile) return "Mobile";
+  if (entry.is_pc) return "PC";
+  if (entry.is_tablet) return "Tablet";
+  return "Other";
+}
+
+function getActionText(entry) {
+  const a = entry.action || "unknown";
+  const d = entry.details || "";
+  if (a === "search") return {text: d.replace("Searched for: ", "").substring(0, 30), class: "action-search", label: "SEARCH"};
+  if (a === "watch") return {text: d.replace("Stream hash: ", "").substring(0, 30), class: "action-watch", label: "WATCH"};
+  if (a === "download") return {text: d.replace("Downloaded: ", "").substring(0, 30), class: "action-download", label: "DOWNLOAD"};
+  if (a === "chat") return {text: d.replace("Chat message: ", "").substring(0, 30), class: "action-chat", label: "CHAT"};
+  if (a === "view_anime") return {text: "Anime ID: " + d.replace("Viewed anime ID: ", "").substring(0, 25), class: "action-view", label: "VIEW"};
+  if (a === "page_view") return {text: "Homepage", class: "action-home", label: "HOME"};
+  return {text: a, class: "action-home", label: "OTHER"};
+}
+
+function formatTime(ts) {
+  if (!ts) return "--:--";
+  const d = new Date(ts);
+  return d.toLocaleTimeString('en-US', {hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'});
+}
+
+function formatIP(ip) {
+  if (!ip || ip === "Unknown") return "---.---.---";
+  return ip.split(',')[0].trim();
+}
+
+function renderTable(logs) {
+  const tbody = document.getElementById('table-body');
+
+  // Filter by tab
+  let filtered = logs;
+  if (currentTab !== 'all') {
+    filtered = logs.filter(e => e.action === currentTab);
+  }
+
+  // Show last 20
+  const recent = filtered.slice(-20).reverse();
+
+  if (recent.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No visitors yet...</div></td></tr>';
+    return;
+  }
+
+  let html = '';
+  for (const entry of recent) {
+    const lid = (entry.timestamp || '') + (entry.ip || '') + (entry.action || '');
+    const isNew = !seenIds.has(lid);
+    if (isNew) seenIds.add(lid);
+
+    const action = getActionText(entry);
+    const rowClass = isNew ? 'new-row' : '';
+
+    html += '<tr class="' + rowClass + '">';
+    html += '<td class="time-text">' + formatTime(entry.timestamp) + '</td>';
+    html += '<td><span class="ip-badge">' + formatIP(entry.ip) + '</span></td>';
+    html += '<td>';
+    html += '<div class="device-cell">';
+    html += '<div class="device-icon">' + getDeviceEmoji(entry) + '</div>';
+    html += '<div class="device-info">';
+    html += '<div class="device-name">' + getDeviceName(entry).substring(0, 20) + '</div>';
+    html += '<div class="device-meta">' + (entry.browser || 'Unknown').split(' ')[0] + ' on ' + (entry.os || 'Unknown').split(' ')[0] + '</div>';
+    html += '</div></div></td>';
+    html += '<td><span class="type-badge ' + getTypeClass(entry) + '">' + getTypeLabel(entry) + '</span></td>';
+    html += '<td>' + (entry.browser || 'Unknown').split(' ')[0] + '</td>';
+    html += '<td>' + (entry.os || 'Unknown').split(' ')[0] + '</td>';
+    html += '<td><span class="action-text ' + action.class + '"><b>' + action.label + '</b> ' + action.text + '</span></td>';
+    html += '</tr>';
+  }
+
+  tbody.innerHTML = html;
+
+  // Keep only last 1000 IDs
+  if (seenIds.size > 1000) {
+    const arr = Array.from(seenIds);
+    seenIds = new Set(arr.slice(-500));
+  }
+}
+
+function updateStats(logs) {
+  let mobile = 0, pc = 0, tablet = 0;
+  for (const e of logs) {
+    if (e.is_mobile) mobile++;
+    else if (e.is_pc) pc++;
+    else if (e.is_tablet) tablet++;
+  }
+  document.getElementById('stat-total').textContent = logs.length;
+  document.getElementById('stat-mobile').textContent = mobile;
+  document.getElementById('stat-pc').textContent = pc;
+
+  // Count new in last minute
+  const oneMinAgo = Date.now() - 60000;
+  const newCount = logs.filter(e => new Date(e.timestamp).getTime() > oneMinAgo).length;
+  document.getElementById('stat-new').textContent = newCount;
+}
+
+async function fetchData() {
+  try {
+    const r = await fetch(API_URL);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const logs = data.visits || [];
+    renderTable(logs);
+    updateStats(logs);
+  } catch (e) {
+    console.error('Fetch error:', e);
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  fetchData();
+}
+
+// Check if URL is set
+if (API_URL.includes('YOUR_APP_URL_HERE')) {
+  document.body.innerHTML = '<div style="text-align:center;padding:60px;color:#90a4ae"><h1 style="color:#ffd600">Setup Required</h1><p>Edit this file and change line 95:</p><code style="background:#0a0f2e;padding:10px 20px;border-radius:8px;display:inline-block;margin:20px 0;color:#448aff">const API_URL = "https://your-app.onrender.com/admin/logs-json";</code><p>Replace with your actual deployed app URL.</p></div>';
+} else {
+  fetchData();
+  setInterval(fetchData, 3000); // Refresh every 3 seconds
+}
+</script>
+
+</body>
+</html>

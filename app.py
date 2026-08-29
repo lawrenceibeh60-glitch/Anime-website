@@ -59,14 +59,14 @@ AI_ERROR_QUEUE = []
 
 # AI Config for error analysis
 AI_ERROR_KEY = os.environ.get("AI_ERROR_KEY", os.environ.get("GROQ_API_KEY", ""))
-AI_MODEL = os.environ.get("AI_MODEL", "llama-3.3-70b-versatile")
+AI_MODEL = os.environ.get("AI_MODEL", "openai/gpt-oss-20b")
 
-# Fallback models in order of reliability (if primary fails)
+# Fallback models in order of reliability (Groq 2026 - Llama models deprecated Aug 16, 2026)
 FALLBACK_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "llama3-70b-8192",
-    "mixtral-8x7b-32768"
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-120b",
+    "qwen/qwen3.6-27b",
+    "meta-llama/llama-4-scout-17b-16e-instruct"
 ]
 
 def groq_chat_completion(messages, system_prompt=None, temperature=0.7, max_tokens=1024, timeout=30):
@@ -271,6 +271,16 @@ def handle_error(error):
 @app.before_request
 def before_request():
     g.start_time = datetime.now()
+    # Maintenance mode check - block visitors but allow admin API
+    if SERVER_STOPPED and not request.path.startswith('/admin/'):
+        # Allow static assets and status check
+        if request.path in ['/api/status', '/admin/api/server-status']:
+            return
+        return jsonify({
+            "error": "Server is under maintenance",
+            "maintenance": True,
+            "message": "We'll be back soon!"
+        }), 503
 
 @app.after_request
 def after_request(response):
@@ -484,8 +494,12 @@ def ah_search_anime(query):
     except: return []
 
 # ===== MAIN ROUTES =====
+MAINTENANCE_HTML = """<!DOCTYPE html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>KYRO - Maintenance</title><style>body{margin:0;padding:0;background:#050714;color:#e3f2fd;font-family:'Segoe UI',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center}h1{font-size:48px;background:linear-gradient(135deg,#2962ff,#ffd600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0}p{color:#90a4ae;font-size:16px;margin-top:16px}.gear{font-size:64px;animation:spin 3s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}</style></head><body><div><div class="gear">⚙️</div><h1>Under Maintenance</h1><p>We're upgrading KYRO.<br>Be back soon!</p></div></body></html>"""
+
 @app.route("/")
 def index():
+    if SERVER_STOPPED:
+        return render_template_string(MAINTENANCE_HTML)
     log_visitor(request, "page_view", "Loaded homepage")
     try:
         with open("templates/index.html", "r") as f:
