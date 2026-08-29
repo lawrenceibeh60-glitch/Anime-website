@@ -339,7 +339,63 @@ body{
 @keyframes spin{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
 
-/* ===== PLAYER ===== */
+/* ===== PLAYER ENHANCEMENTS ===== */
+.player-box{position:relative}
+.player-controls-bar{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  background:rgba(13,19,53,0.9);border-top:1px solid rgba(41,98,255,0.15);
+}
+.speed-select{
+  background:rgba(13,19,53,0.8);border:1px solid rgba(41,98,255,0.2);
+  border-radius:6px;padding:5px 10px;color:var(--text);font-size:11px;
+  cursor:pointer;outline:none;
+}
+.speed-select:focus{border-color:var(--blue)}
+.keyboard-hint{
+  font-size:10px;color:var(--text-dim);margin-left:auto;
+  display:flex;gap:8px;align-items:center;
+}
+.keyboard-hint kbd{
+  background:rgba(41,98,255,0.15);border:1px solid rgba(41,98,255,0.2);
+  border-radius:4px;padding:2px 6px;font-size:9px;font-family:monospace;
+}
+
+/* Auto-next overlay */
+.auto-next-overlay{
+  position:absolute;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(5,7,20,0.95);border:1px solid rgba(41,98,255,0.3);
+  border-radius:var(--radius);padding:16px 24px;text-align:center;
+  z-index:10;opacity:0;pointer-events:none;transition:.4s;
+  box-shadow:0 10px 40px rgba(0,0,0,0.6),0 0 20px rgba(41,98,255,0.1);
+  min-width:240px;
+}
+.auto-next-overlay.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.auto-next-overlay h4{font-size:14px;color:var(--silver-light);margin-bottom:8px}
+.auto-next-overlay .countdown{font-size:28px;font-weight:900;color:var(--yellow);margin:8px 0}
+.auto-next-overlay .next-ep-title{font-size:12px;color:var(--text-dim);margin-bottom:12px}
+.auto-next-overlay .auto-next-btns{display:flex;gap:10px;justify-content:center}
+.auto-next-overlay button{
+  padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;border:none;
+}
+.auto-next-overlay .btn-play{
+  background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;
+  box-shadow:0 4px 15px rgba(41,98,255,0.3);
+}
+.auto-next-overlay .btn-play:hover{transform:scale(1.05)}
+.auto-next-overlay .btn-cancel{
+  background:rgba(13,19,53,0.8);color:var(--text);border:1px solid rgba(41,98,255,0.2);
+}
+.auto-next-overlay .btn-cancel:hover{border-color:var(--blue)}
+
+/* Keyboard shortcut toast */
+.key-toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(5,7,20,0.9);border:1px solid rgba(41,98,255,0.3);
+  border-radius:var(--radius-sm);padding:8px 16px;color:var(--text);
+  font-size:12px;z-index:2001;opacity:0;transition:.3s;pointer-events:none;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.key-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .player-overlay{
   position:fixed;top:0;left:0;right:0;bottom:0;
   background:rgba(5,7,20,0.96);backdrop-filter:blur(10px);
@@ -465,6 +521,11 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
   .player-actions{width:100%;justify-content:flex-end}
   .queue-panel{width:calc(100% - 32px);right:16px;left:16px}
   .queue-toggle{bottom:12px;right:12px;width:44px;height:44px}
+  .player-controls-bar{flex-wrap:wrap;gap:6px;padding:8px 12px}
+  .keyboard-hint{display:none}
+  .speed-select{padding:4px 8px;font-size:10px}
+  .auto-next-overlay{min-width:200px;padding:12px 16px;bottom:50px}
+  .auto-next-overlay .countdown{font-size:22px}
 }
 @media(max-width:400px){
   .anime-grid{grid-template-columns:repeat(2,1fr)}
@@ -584,11 +645,34 @@ select.ep-btn:focus{outline:none;border-color:var(--blue)!important}
       </div>
     </div>
     <video id="video-player" controls autoplay playsinline></video>
+    <div class="player-controls-bar">
+      <select class="speed-select" id="speed-select" onchange="changeSpeed(this.value)">
+        <option value="0.5">0.5x</option>
+        <option value="0.75">0.75x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+      <div class="keyboard-hint">
+        <kbd>Space</kbd> Play <kbd>&larr;</kbd> -10s <kbd>&rarr;</kbd> +10s <kbd>N</kbd> Next <kbd>F</kbd> Fullscreen
+      </div>
+    </div>
+    <div class="auto-next-overlay" id="auto-next-overlay">
+      <h4>Up Next</h4>
+      <div class="countdown" id="auto-next-countdown">5</div>
+      <div class="next-ep-title" id="auto-next-title">Episode 2</div>
+      <div class="auto-next-btns">
+        <button class="btn-play" onclick="autoNextPlay()">Play Now</button>
+        <button class="btn-cancel" onclick="autoNextCancel()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Toast -->
 <div id="toast" class="toast"></div>
+<div id="key-toast" class="key-toast"></div>
 
 <script>
 
@@ -1054,7 +1138,103 @@ function queueEpisode(index){
 
 function downloadCurrent(){if(currentEpisodes[currentEpIndex])dlEpisode(currentEpIndex);}
 function nextEpisode(){if(currentEpIndex<currentEpisodes.length-1){playEpisode(currentEpIndex+1);}else{showToast("This is the last episode","error");}}
-function closePlayer(){document.getElementById("video-player").pause();document.getElementById("video-player").src="";document.getElementById("player-overlay").classList.add("hidden");}
+function closePlayer(){
+  autoNextCancel();
+  document.getElementById("video-player").pause();
+  document.getElementById("video-player").src="";
+  document.getElementById("player-overlay").classList.add("hidden");
+}
+
+// ===== PLAYBACK SPEED =====
+function changeSpeed(speed){
+  const v=document.getElementById("video-player");
+  v.playbackRate=parseFloat(speed);
+  showKeyToast("Speed: "+speed+"x");
+}
+
+// ===== AUTO-NEXT EPISODE =====
+let autoNextTimer=null;
+let autoNextCount=5;
+function setupAutoNext(){
+  const v=document.getElementById("video-player");
+  v.addEventListener("ended",onVideoEnded);
+}
+function onVideoEnded(){
+  if(currentEpIndex>=currentEpisodes.length-1)return;
+  const nextEp=currentEpisodes[currentEpIndex+1];
+  if(!nextEp||!nextEp.hash)return;
+  document.getElementById("auto-next-title").textContent=nextEp.title||("Episode "+nextEp.number);
+  document.getElementById("auto-next-overlay").classList.add("show");
+  autoNextCount=5;
+  document.getElementById("auto-next-countdown").textContent=autoNextCount;
+  autoNextTimer=setInterval(()=>{
+    autoNextCount--;
+    document.getElementById("auto-next-countdown").textContent=autoNextCount;
+    if(autoNextCount<=0){clearInterval(autoNextTimer);autoNextPlay();}
+  },1000);
+}
+function autoNextPlay(){
+  autoNextCancel();
+  if(currentEpIndex<currentEpisodes.length-1)playEpisode(currentEpIndex+1);
+}
+function autoNextCancel(){
+  if(autoNextTimer){clearInterval(autoNextTimer);autoNextTimer=null;}
+  document.getElementById("auto-next-overlay").classList.remove("show");
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+let keyToastTimer=null;
+function showKeyToast(msg){
+  const t=document.getElementById("key-toast");
+  t.textContent=msg;t.classList.add("show");
+  if(keyToastTimer)clearTimeout(keyToastTimer);
+  keyToastTimer=setTimeout(()=>t.classList.remove("show"),1500);
+}
+document.addEventListener("keydown",function(e){
+  const overlay=document.getElementById("player-overlay");
+  if(overlay.classList.contains("hidden"))return;
+  const v=document.getElementById("video-player");
+  if(!v.src)return;
+  
+  // Don't trigger when typing in chat
+  if(document.activeElement&&document.activeElement.tagName==="INPUT")return;
+  
+  switch(e.code){
+    case "Space":
+      e.preventDefault();
+      if(v.paused){v.play();showKeyToast("Play");}else{v.pause();showKeyToast("Pause");}
+      break;
+    case "ArrowLeft":
+      e.preventDefault();v.currentTime=Math.max(0,v.currentTime-10);showKeyToast("-10s");break;
+    case "ArrowRight":
+      e.preventDefault();v.currentTime=Math.min(v.duration||9999,v.currentTime+10);showKeyToast("+10s");break;
+    case "ArrowUp":
+      e.preventDefault();v.volume=Math.min(1,v.volume+0.1);showKeyToast("Vol "+Math.round(v.volume*100)+"%");break;
+    case "ArrowDown":
+      e.preventDefault();v.volume=Math.max(0,v.volume-0.1);showKeyToast("Vol "+Math.round(v.volume*100)+"%");break;
+    case "KeyN":
+      e.preventDefault();nextEpisode();showKeyToast("Next Episode");break;
+    case "KeyF":
+      e.preventDefault();
+      if(document.fullscreenElement){document.exitFullscreen();showKeyToast("Exit Fullscreen");}
+      else{v.requestFullscreen();showKeyToast("Fullscreen");}
+      break;
+    case "KeyM":
+      e.preventDefault();v.muted=!v.muted;showKeyToast(v.muted?"Muted":"Unmuted");break;
+    case "KeyS":
+      e.preventDefault();
+      const speeds=[0.5,0.75,1,1.25,1.5,2];
+      const sel=document.getElementById("speed-select");
+      let idx=speeds.indexOf(parseFloat(sel.value));
+      idx=(idx+1)%speeds.length;
+      sel.value=speeds[idx];
+      changeSpeed(speeds[idx]);
+      break;
+  }
+});
+
+// Init auto-next listener
+setupAutoNext();
 function showSearch(){document.getElementById("search-view").classList.remove("hidden");document.getElementById("detail-view").classList.add("hidden");currentEpisodes=[];currentAhId="";}
 
 // ===== AI CHAT =====
