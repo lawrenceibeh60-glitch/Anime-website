@@ -409,4 +409,18 @@ def admin_logs():
     except Exception as e:
         return f"<h1>Error</h1><p>{e}</p>"
 
+
+
+@app.route("/admin/logs-json")
+def admin_logs_json():
+    """Return logs as JSON for external viewers"""
+    try:
+        if not os.path.exists(VISITOR_LOG):
+            return jsonify({"visits": [], "total": 0})
+        with open(VISITOR_LOG, 'r') as f:
+            logs = json.load(f)
+        return jsonify({"visits": logs, "total": len(logs)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__": app.run(debug=True, host="0.0.0.0", port=5000)
