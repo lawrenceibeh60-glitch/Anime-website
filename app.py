@@ -14,10 +14,15 @@ from user_agents import parse as ua_parse
 import json
 
 # ===== PASSWORD & UNLOCK SYSTEM =====
+# Default password (change this!)
 DEFAULT_PASSWORD = os.environ.get("KYRO_PASSWORD", "kyro2026")
+# Max failed attempts before lockout
 MAX_ATTEMPTS = 5
+# Store failed attempts per IP
 FAILED_ATTEMPTS = {}
+# Unlock codes sent by locked-out users
 UNLOCK_CODES = []
+# Current password (can be changed by admin)
 CURRENT_PASSWORD = DEFAULT_PASSWORD
 
 def hash_password(pwd):
@@ -27,6 +32,7 @@ def check_password(pwd):
     return hash_password(pwd) == hash_password(CURRENT_PASSWORD)
 
 def generate_unlock_code():
+    """Generate a 6-digit unlock code"""
     return "".join(secrets.choice(string.digits) for _ in range(6))
 
 def get_client_ip():
@@ -51,8 +57,64 @@ def get_remaining_attempts(ip):
 ERROR_LOG = "/tmp/kyro_errors.json"
 AI_ERROR_QUEUE = []
 
-AI_ERROR_KEY = os.environ.get("AI_ERROR_KEY", os.environ.get("GROQ_API_KEY", "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"))
-AI_MODEL = os.environ.get("AI_MODEL", "llama-3.1-70b-versatile")
+# AI Config for error analysis
+AI_ERROR_KEY = os.environ.get("AI_ERROR_KEY", os.environ.get("GROQ_API_KEY", ""))
+AI_MODEL = os.environ.get("AI_MODEL", "llama-3.3-70b-versatile")
+
+# Fallback models in order of reliability (if primary fails)
+FALLBACK_MODELS = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "llama3-70b-8192",
+    "mixtral-8x7b-32768"
+]
+
+def groq_chat_completion(messages, system_prompt=None, temperature=0.7, max_tokens=1024, timeout=30):
+    """Send chat to Groq with automatic fallback between models"""
+    if not GROQ_API_KEY:
+        return {"error": "No GROQ_API_KEY configured", "reply": "Set your GROQ_API_KEY environment variable to enable AI chat."}
+    
+    all_models = [AI_MODEL] + [m for m in FALLBACK_MODELS if m != AI_MODEL]
+    last_error = None
+    
+    for model in all_models:
+        try:
+            payload = {
+                "model": model,
+                "messages": ([{"role": "system", "content": system_prompt}] if system_prompt else []) + messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens
+            }
+            r = requests.post(
+                GROQ_URL,
+                headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=timeout
+            )
+            result = r.json()
+            
+            if "choices" in result and len(result["choices"]) > 0:
+                return {"success": True, "reply": result["choices"][0]["message"]["content"], "model_used": model}
+            elif "error" in result:
+                err_msg = result["error"].get("message", "Unknown error")
+                # If model not found, try next
+                if "model" in err_msg.lower() or "not found" in err_msg.lower():
+                    last_error = err_msg
+                    continue
+                return {"error": err_msg, "reply": f"Groq API Error: {err_msg}"}
+            else:
+                last_error = "Unexpected response format"
+                continue
+                
+        except requests.exceptions.Timeout:
+            last_error = "Request timeout"
+            continue
+        except Exception as e:
+            last_error = str(e)
+            continue
+    
+    # All models failed
+    return {"error": f"All models failed. Last error: {last_error}", "reply": "AI service is temporarily unavailable. Please try again in a moment."}
 
 def log_error(error_type, error_msg, traceback_str, endpoint="", user_agent=""):
     try:
@@ -87,7 +149,7 @@ def log_error(error_type, error_msg, traceback_str, endpoint="", user_agent=""):
 
 def analyze_error_with_ai(error_entry):
     if not AI_ERROR_KEY:
-        return {"diagnosis": "No AI key configured.", "fix": "N/A"}
+        return {"diagnosis": "No AI key configured. Set AI_ERROR_KEY env var.", "fix": "N/A"}
     prompt = f"""You are a Python/Flask debugging expert. Analyze this error and provide:
 1. A clear diagnosis (what went wrong in 1-2 sentences)
 2. A specific code fix (the exact code change needed)
@@ -102,35 +164,24 @@ Respond in this exact format:
 DIAGNOSIS: [your diagnosis here]
 FIX: [your code fix here]
 """
-    try:
-        payload = {
-            "model": AI_MODEL,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.3,
-            "max_tokens": 1024
-        }
-        r = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {AI_ERROR_KEY}", "Content-Type": "application/json"},
-            json=payload,
-            timeout=30
-        )
-        result = r.json()
-        if "choices" in result:
-            text = result["choices"][0]["message"]["content"]
-            diagnosis = ""
-            fix = ""
-            if "DIAGNOSIS:" in text:
-                parts = text.split("FIX:")
-                diagnosis = parts[0].replace("DIAGNOSIS:", "").strip()
-                fix = parts[1].strip() if len(parts) > 1 else "See full response"
-            else:
-                diagnosis = text[:200]
-                fix = text[200:500] if len(text) > 200 else "N/A"
-            return {"diagnosis": diagnosis, "fix": fix, "full_response": text}
-    except Exception as e:
-        return {"diagnosis": f"AI analysis failed: {str(e)}", "fix": "N/A"}
-    return {"diagnosis": "Could not analyze", "fix": "N/A"}
+    result = groq_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3,
+        max_tokens=1024
+    )
+    if result.get("success"):
+        text = result["reply"]
+        diagnosis = ""
+        fix = ""
+        if "DIAGNOSIS:" in text:
+            parts = text.split("FIX:")
+            diagnosis = parts[0].replace("DIAGNOSIS:", "").strip()
+            fix = parts[1].strip() if len(parts) > 1 else "See full response"
+        else:
+            diagnosis = text[:200]
+            fix = text[200:500] if len(text) > 200 else "N/A"
+        return {"diagnosis": diagnosis, "fix": fix, "full_response": text, "model_used": result.get("model_used")}
+    return {"diagnosis": f"AI analysis failed: {result.get('error', 'Unknown')}", "fix": "N/A"}
 
 # ===== VISITOR TRACKING =====
 VISITOR_LOG = "/tmp/kyro_visitors.json"
@@ -206,11 +257,9 @@ except:
 
 # ===== FLASK APP =====
 app = Flask(__name__)
-CORS(app, resources={
-    r"/api/*": {"origins": "*"},
-    r"/admin/*": {"origins": "*"}
-}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "*"}, r"/admin/*": {"origins": "*"}})
 
+# Error handler
 @app.errorhandler(Exception)
 def handle_error(error):
     tb = traceback.format_exc()
@@ -218,6 +267,7 @@ def handle_error(error):
               endpoint=request.path, user_agent=request.headers.get('User-Agent', ''))
     return jsonify({"error": "Internal server error", "type": type(error).__name__}), 500
 
+# Request hooks
 @app.before_request
 def before_request():
     g.start_time = datetime.now()
@@ -235,31 +285,18 @@ def after_request(response):
                       f"Endpoint: {request.path}", endpoint=request.path)
     return response
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "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")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 ANILIST_URL = "https://graphql.anilist.co"
 ANIMEHEAVEN = "https://animeheaven.me"
 
 SYSTEM_PROMPT = """You are KYRO, an AI anime expert."""
 
-# Cached AnimeHeaven status to avoid slow calls
-_AH_STATUS_CACHE = {"status": False, "time": 0}
-
-def get_ah_status():
-    global _AH_STATUS_CACHE
-    now = datetime.now().timestamp()
-    if now - _AH_STATUS_CACHE["time"] > 60:  # Cache for 60 seconds
-        try:
-            _AH_STATUS_CACHE["status"] = requests.get(ANIMEHEAVEN, timeout=5).status_code == 200
-        except:
-            _AH_STATUS_CACHE["status"] = False
-        _AH_STATUS_CACHE["time"] = now
-    return _AH_STATUS_CACHE["status"]
-
 # ===== PASSWORD API ENDPOINTS =====
 
 @app.route("/api/password/check", methods=["POST"])
 def password_check():
+    """Check if password is correct, track attempts"""
     data = request.get_json() or {}
     pwd = data.get("password", "")
     ip = get_client_ip()
@@ -277,6 +314,7 @@ def password_check():
 
 @app.route("/api/password/remaining")
 def password_remaining():
+    """Get remaining attempts for this IP"""
     ip = get_client_ip()
     return jsonify({
         "remaining": get_remaining_attempts(ip),
@@ -285,6 +323,7 @@ def password_remaining():
 
 @app.route("/api/password/unlock-request", methods=["POST"])
 def password_unlock_request():
+    """User is locked out, send unlock code to admin"""
     data = request.get_json() or {}
     ip = get_client_ip()
     device = data.get("device", "Unknown")
@@ -306,27 +345,32 @@ def password_unlock_request():
 @app.route("/admin/api/unlock-codes")
 @require_role("owner")
 def admin_unlock_codes():
+    """Admin views all pending unlock codes"""
     pending = [u for u in UNLOCK_CODES if not u.get("used")]
     return jsonify({"codes": pending, "total_pending": len(pending)})
 
 @app.route("/admin/api/unlock", methods=["POST"])
 @require_role("owner")
 def admin_unlock():
+    """Admin unlocks a user and optionally sets new password"""
     data = request.get_json() or {}
     code = data.get("code", "").strip()
     new_password = data.get("new_password", "").strip()
 
+    # Find and mark code as used
     found = False
     for u in UNLOCK_CODES:
         if u.get("code") == code and not u.get("used"):
             u["used"] = True
             found = True
+            # Reset attempts for that IP
             reset_attempts(u.get("ip", ""))
             break
 
     if not found:
         return jsonify({"error": "Invalid or used unlock code"}), 400
 
+    # Optionally change password
     global CURRENT_PASSWORD
     if new_password and len(new_password) >= 4:
         CURRENT_PASSWORD = new_password
@@ -337,6 +381,7 @@ def admin_unlock():
 @app.route("/admin/api/change-password", methods=["POST"])
 @require_role("owner")
 def admin_change_password():
+    """Admin changes the password directly"""
     global CURRENT_PASSWORD
     data = request.get_json() or {}
     new_password = data.get("new_password", "").strip()
@@ -470,18 +515,8 @@ def chat():
     msg = data.get("messages", [{}])[-1].get("content", "") if data.get("messages") else ""
     log_visitor(request, "chat", f"Chat message: {msg[:50]}...")
     messages = data.get("messages", [])
-    if not GROQ_API_KEY: return jsonify({"reply": "Set your GROQ_API_KEY environment variable to enable AI chat."})
-    payload = {"model": AI_MODEL, "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages, "temperature": 0.8, "max_tokens": 1024}
-    try:
-        r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}, json=payload, timeout=30)
-        result = r.json()
-        if "choices" in result and len(result["choices"]) > 0:
-            return jsonify({"reply": result["choices"][0]["message"]["content"]})
-        elif "error" in result:
-            return jsonify({"reply": f"Groq API Error: {result['error'].get('message', 'Unknown error')}"})
-        else:
-            return jsonify({"reply": "Unexpected response from AI. Please try again."})
-    except Exception as e: return jsonify({"reply": f"Connection error: {str(e)}. Check your API key and try again."})
+    result = groq_chat_completion(messages, system_prompt=SYSTEM_PROMPT, temperature=0.8, max_tokens=1024)
+    return jsonify({"reply": result.get("reply", "AI service unavailable")})
 
 @app.route("/api/search")
 def search():
@@ -639,12 +674,7 @@ def admin_logs_json():
 
 @app.route("/admin/dashboard")
 def admin_dashboard():
-    try:
-        with open("templates/dashboard.html", "r") as f:
-            html = f.read()
-        return render_template_string(html)
-    except:
-        return "<h1>Dashboard not found</h1><p>Make sure dashboard.html exists in templates/</p>", 404
+    return send_from_directory('templates', 'dashboard.html')
 
 # ===== ADMIN API =====
 
@@ -885,25 +915,15 @@ def admin_api_code_review():
 3. EXPLANATION: Why this fixes it
 
 Keep it concise and actionable."""
-    try:
-        payload = {
-            "model": AI_MODEL,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.3,
-            "max_tokens": 2048
-        }
-        r = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {AI_ERROR_KEY}", "Content-Type": "application/json"},
-            json=payload,
-            timeout=45
-        )
-        result = r.json()
-        if "choices" in result:
-            return jsonify({"review": result["choices"][0]["message"]["content"]})
-        return jsonify({"error": "AI returned no response"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    result = groq_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3,
+        max_tokens=2048,
+        timeout=45
+    )
+    if result.get("success"):
+        return jsonify({"review": result["reply"], "model_used": result.get("model_used")})
+    return jsonify({"error": result.get("error", "AI failed")}), 500
 
 @app.route("/admin/api/ai/ask", methods=["POST"])
 @require_role("owner")
@@ -923,7 +943,7 @@ def admin_api_ai_ask():
 - Downloads today: {stats['downloads']}
 - Top search: {stats['top_search']}
 - Server: {'Running' if not SERVER_STOPPED else 'STOPPED (maintenance)'}
-- AnimeHeaven: {'Connected' if get_ah_status() else 'Down'}
+- AnimeHeaven: {'Connected' if requests.get(ANIMEHEAVEN, timeout=5).status_code == 200 else 'Down'}
 - AniList: Connected
 - AI Chat: {'Enabled' if GROQ_API_KEY else 'Disabled (no key)'}
 """
@@ -936,25 +956,14 @@ Owner's question: {question}
 Answer concisely and helpfully. If they ask about errors, check the stats above.
 If they ask about features, suggest improvements based on the data.
 """
-    try:
-        payload = {
-            "model": AI_MODEL,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.7,
-            "max_tokens": 1024
-        }
-        r = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {AI_ERROR_KEY}", "Content-Type": "application/json"},
-            json=payload,
-            timeout=30
-        )
-        result = r.json()
-        if "choices" in result:
-            return jsonify({"answer": result["choices"][0]["message"]["content"]})
-        return jsonify({"error": "AI returned no response"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    result = groq_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7,
+        max_tokens=1024
+    )
+    if result.get("success"):
+        return jsonify({"answer": result["reply"], "model_used": result.get("model_used")})
+    return jsonify({"error": result.get("error", "AI failed")}), 500
 
 @app.route("/admin/api/ai/diagnose-site", methods=["POST"])
 @require_role("owner")
@@ -994,25 +1003,14 @@ Provide:
 4. PRIORITY: What to fix first
 
 Be direct and actionable."""
-    try:
-        payload = {
-            "model": AI_MODEL,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.5,
-            "max_tokens": 1500
-        }
-        r = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {AI_ERROR_KEY}", "Content-Type": "application/json"},
-            json=payload,
-            timeout=30
-        )
-        result = r.json()
-        if "choices" in result:
-            return jsonify({"diagnosis": result["choices"][0]["message"]["content"]})
-        return jsonify({"error": "AI returned no response"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    result = groq_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.5,
+        max_tokens=1500
+    )
+    if result.get("success"):
+        return jsonify({"diagnosis": result["reply"], "model_used": result.get("model_used")})
+    return jsonify({"error": result.get("error", "AI failed")}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
