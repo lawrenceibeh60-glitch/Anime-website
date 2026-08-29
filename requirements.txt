@@ -1,7 +1,6 @@
-flask
+flask==3.1.0
 requests
 beautifulsoup4
 gunicorn
 user-agents==2.2.0
-
 flask-cors==4.0.0
