@@ -501,14 +501,9 @@ def index():
     if SERVER_STOPPED:
         return render_template_string(MAINTENANCE_HTML)
     log_visitor(request, "page_view", "Loaded homepage")
-    try:
-        with open("templates/index.html", "r") as f:
-            html = f.read()
-        return render_template_string(html)
-    except:
-        with open("index.html", "r") as f:
-            html = f.read()
-        return render_template_string(html)
+    with open("index.html", "r") as f:
+        html = f.read()
+    return render_template_string(html)
 
 @app.route("/api/status")
 def status():
@@ -689,20 +684,20 @@ def admin_logs_json():
 @app.route("/admin/dashboard")
 def admin_dashboard():
     try:
-        with open("templates/dashboard.html", "r") as f:
+        with open("dashboard.html", "r") as f:
             html = f.read()
         return render_template_string(html)
     except:
-        return "<h1>Dashboard not found</h1><p>Make sure templates/dashboard.html exists.</p>", 404
+        return "<h1>Dashboard not found</h1><p>Make sure dashboard.html is in the project root.</p>", 404
 
 @app.route("/admin/remote")
 def admin_remote():
     try:
-        with open("templates/remote_controller.html", "r") as f:
+        with open("remote_controller.html", "r") as f:
             html = f.read()
         return render_template_string(html)
     except:
-        return "<h1>Remote controller not found</h1><p>Make sure templates/remote_controller.html exists.</p>", 404
+        return "<h1>Remote controller not found</h1><p>Make sure remote_controller.html is in the project root.</p>", 404
 
 # ===== ADMIN API =====
 
