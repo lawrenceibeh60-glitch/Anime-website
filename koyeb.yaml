@@ -1,0 +1,41 @@
+name: kyro-ai-anime
+region: fra  # Frankfurt (good for global)
+
+# Build configuration
+builder: DOCKERFILE
+
+# Environment variables (set these in Koyeb dashboard)
+env:
+  - name: GROQ_API_KEY
+    value: ""  # Set in Koyeb dashboard after deployment
+  - name: FLASK_ENV
+    value: production
+  - name: PYTHONDONTWRITEBYTECODE
+    value: "1"
+  - name: PYTHONUNBUFFERED
+    value: "1"
+
+# Health check
+healthcheck:
+  http:
+    port: 5000
+    path: /api/status
+
+# Scaling (free tier limits)
+scalings:
+  min: 0  # Scale to zero when idle (free tier)
+  max: 1
+
+# Instance type (free tier)
+instance_types:
+  - nano  # 512MB RAM, 0.1 vCPU (free)
+
+# Ports
+ports:
+  - port: 5000
+    protocol: http
+
+# Routes
+routes:
+  - path: /
+    port: 5000
