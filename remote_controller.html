@@ -561,8 +561,13 @@ let visitorFilter='all';
 function api(endpoint,opts={}){
   return fetch(APP_URL+endpoint,{
     ...opts,
+    mode:'cors',
+    credentials:'omit',
     headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY,...opts.headers}
-  }).then(r=>r.json());
+  }).then(r=>{
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  });
 }
 
 // ===== SETUP =====

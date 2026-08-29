@@ -52,7 +52,7 @@ ERROR_LOG = "/tmp/kyro_errors.json"
 AI_ERROR_QUEUE = []
 
 AI_ERROR_KEY = os.environ.get("AI_ERROR_KEY", os.environ.get("GROQ_API_KEY", "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"))
-AI_MODEL = os.environ.get("AI_MODEL", "llama-3.3-70b-versatile")
+AI_MODEL = os.environ.get("AI_MODEL", "llama-3.1-70b-versatile")
 
 def log_error(error_type, error_msg, traceback_str, endpoint="", user_agent=""):
     try:
@@ -206,7 +206,10 @@ except:
 
 # ===== FLASK APP =====
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}, r"/admin/*": {"origins": "*"}})
+CORS(app, resources={
+    r"/api/*": {"origins": "*"},
+    r"/admin/*": {"origins": "*"}
+}, supports_credentials=True)
 
 @app.errorhandler(Exception)
 def handle_error(error):
