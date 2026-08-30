@@ -38,16 +38,16 @@ LOGGED_IN = False
 # ================================================
 
 # Colors
-BG = "#050714"
-CARD = "#0a0f2e"
-BORDER = "#1a237e"
-BLUE = "#2962ff"
-GREEN = "#00d26a"
-RED = "#ef5350"
-YELLOW = "#ffd600"
-TEXT = "#e3f2fd"
-DIM = "#90a4ae"
-MAGENTA = "#d500f9"
+BG = "#0b1622"
+CARD = "#151f2e"
+BORDER = "#2c3e50"
+BLUE = "#3db4f2"
+GREEN = "#4ade80"
+RED = "#f87171"
+YELLOW = "#facc15"
+TEXT = "#e5e7eb"
+DIM = "#9ca3af"
+MAGENTA = "#a78bfa"
 CYAN = "#00bcd4"
 ORANGE = "#ff9800"
 

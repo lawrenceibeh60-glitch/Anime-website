@@ -25,6 +25,16 @@ UNLOCK_CODES = []
 # Current password (can be changed by admin)
 CURRENT_PASSWORD = DEFAULT_PASSWORD
 
+# ===== EMERGENCY BYPASS =====
+# If you get locked out, set KYRO_EMERGENCY_KEY env var and use it as password
+EMERGENCY_KEY = os.environ.get("KYRO_EMERGENCY_KEY", "")
+
+def check_emergency_bypass(pwd):
+    """Allow emergency unlock with env var key - resets lockout"""
+    if not EMERGENCY_KEY:
+        return False
+    return pwd == EMERGENCY_KEY
+
 def hash_password(pwd):
     return hashlib.sha256(pwd.encode()).hexdigest()
 
@@ -311,6 +321,11 @@ def password_check():
     pwd = data.get("password", "")
     ip = get_client_ip()
 
+    # EMERGENCY BYPASS - resets everything
+    if check_emergency_bypass(pwd):
+        reset_attempts(ip)
+        return jsonify({"success": True, "role": "user", "bypass": True})
+
     if is_locked_out(ip):
         return jsonify({"locked": True, "message": "Too many failed attempts. Contact admin for unlock code."}), 403
 
@@ -401,6 +416,15 @@ def admin_change_password():
 
     CURRENT_PASSWORD = new_password
     return jsonify({"success": True, "message": "Password updated successfully."})
+
+@app.route("/admin/api/reset-lockouts", methods=["POST"])
+@require_role("owner")
+def admin_reset_lockouts():
+    """Reset all failed attempts and unlock all IPs"""
+    global FAILED_ATTEMPTS
+    count = len(FAILED_ATTEMPTS)
+    FAILED_ATTEMPTS = {}
+    return jsonify({"success": True, "message": f"Reset {count} locked IP(s). All users can now log in."})
 
 # ===== ANILIST FUNCTIONS =====
 def anilist_search(query, limit=20):

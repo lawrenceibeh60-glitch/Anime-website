@@ -5,113 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KYRO Admin Controller</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 :root{
-  --bg:#1a120b;--bg2:#2c1e14;--bg3:#3d2b1f;--border:#8b6914;
-  --gold:#c9a227;--gold2:#e8c84a;--silver:#9e9e9e;--silver2:#d4d0c8;
-  --text:#d4d0c8;--dim:#8a8278;
-  --red:#b85450;--green:#6b8e6b;--magenta:#8b6b8e;--cyan:#6b8e8e;--orange:#b88e6b;
+  --bg-primary:#0b1622;--bg-secondary:#151f2e;--bg-tertiary:#1c2636;--bg-card:#151f2e;--bg-hover:#1c2636;
+  --border:#2c3e50;--border-light:#3a4f6a;
+  --accent:#3db4f2;--accent-light:#5cc8ff;--accent-dark:#2a8bc4;--accent-soft:rgba(61,180,242,0.15);
+  --text-primary:#e5e7eb;--text-secondary:#9ca3af;--text-muted:#6b7280;--text-dark:#111827;
+  --green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#facc15;--magenta:#a78bfa;
+  --radius-sm:4px;--radius-md:6px;--radius-lg:8px;--radius-xl:12px;
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.2);--shadow-md:0 4px 16px rgba(0,0,0,0.3);--shadow-lg:0 8px 32px rgba(0,0,0,0.4);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
-  font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased;
 }
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-light)}
 
 /* LOGIN SCREEN */
 .login-screen{
-  position:fixed;inset:0;z-index:9999;background:var(--bg);
+  position:fixed;inset:0;z-index:9999;background:var(--bg-primary);
   display:flex;align-items:center;justify-content:center;flex-direction:column;
 }
 .login-box{
-  background:var(--bg2);border:1px solid var(--border);
+  background:var(--bg-secondary);border:1px solid var(--border);
   padding:40px;width:100%;max-width:420px;text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  box-shadow:var(--shadow-lg);border-radius:var(--radius-lg);
 }
 .login-box h1{
-  font-size:36px;color:var(--gold);margin-bottom:8px;
+  font-size:36px;color:var(--accent);margin-bottom:8px;
 }
-.login-box h2{font-size:14px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:30px}
+.login-box h2{font-size:14px;color:var(--text-muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:30px}
 .login-box input{
-  width:100%;background:var(--bg3);border:1px solid var(--border);
-  padding:14px 16px;color:var(--text);font-size:16px;margin-bottom:16px;outline:none;transition:.2s;
+  width:100%;background:var(--bg-tertiary);border:1px solid var(--border);
+  padding:14px 16px;color:var(--text-primary);font-size:16px;margin-bottom:16px;outline:none;transition:.2s;
 }
-.login-box input:focus{border-color:var(--gold)}
-.login-box input::placeholder{color:var(--dim)}
+.login-box input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(61,180,242,0.15)}
+.login-box input::placeholder{color:var(--text-muted)}
 .login-box button{
-  width:100%;background:var(--gold);border:1px solid var(--gold2);
-  padding:14px;color:var(--bg);font-size:16px;font-weight:700;cursor:pointer;transition:.2s;text-transform:uppercase;letter-spacing:1px;
+  width:100%;background:var(--accent);border:1px solid var(--accent-light);
+  padding:14px;color:var(--bg-primary);font-size:16px;font-weight:700;cursor:pointer;transition:.2s;text-transform:uppercase;letter-spacing:1px;
 }
-.login-box button:hover{background:var(--gold2)}
+.login-box button:hover{background:var(--accent-light)}
 .login-box button:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .attempts{font-size:12px;margin-top:12px}
 .attempts.ok{color:var(--green)}
-.attempts.warn{color:var(--gold)}
+.attempts.warn{color:var(--accent)}
 .attempts.bad{color:var(--red)}
 .login-status{color:var(--red);font-size:13px;margin-top:10px;min-height:20px}
 .unlock-section{display:none;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
-.unlock-section p{color:var(--dim);font-size:13px;margin-bottom:12px}
+.unlock-section p{color:var(--text-muted);font-size:13px;margin-bottom:12px}
 .btn-orange{background:var(--orange)!important;border-color:var(--orange)!important}
 
 /* MODE SELECTOR */
 .mode-screen{
-  position:fixed;inset:0;z-index:9998;background:var(--bg);
+  position:fixed;inset:0;z-index:9998;background:var(--bg-primary);
   display:none;align-items:center;justify-content:center;flex-direction:column;
 }
 .mode-box{width:100%;max-width:500px}
 .mode-card{
-  background:var(--bg2);border:1px solid var(--border);
+  background:var(--bg-secondary);border:1px solid var(--border);
   padding:24px;margin-bottom:16px;cursor:pointer;transition:.3s;
 }
-.mode-card:hover{border-color:var(--gold);transform:translateX(5px)}
+.mode-card:hover{border-color:var(--accent);transform:translateX(5px)}
 .mode-card h3{font-size:20px;margin-bottom:6px}
-.mode-card.owner h3{color:var(--gold)}
+.mode-card.owner h3{color:var(--accent)}
 .mode-card.staff h3{color:var(--green)}
-.mode-card p{color:var(--dim);font-size:13px}
+.mode-card p{color:var(--text-muted);font-size:13px}
 .mode-card .tag{font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-top:10px;display:inline-block;padding:4px 12px;border:1px solid var(--border)}
-.mode-card.owner .tag{background:var(--bg3);color:var(--gold);border-color:var(--gold)}
-.mode-card.staff .tag{background:var(--bg3);color:var(--green);border-color:var(--green)}
+.mode-card.owner .tag{background:var(--bg-tertiary);color:var(--accent);border-color:var(--accent)}
+.mode-card.staff .tag{background:var(--bg-tertiary);color:var(--green);border-color:var(--green)}
 
 /* MAIN APP */
 .app{display:none;min-height:100vh}
 .header{
   position:fixed;top:0;left:0;right:0;z-index:100;height:56px;
-  background:var(--bg);border-bottom:1px solid var(--border);
+  background:var(--bg-primary);border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;padding:0 20px;
 }
-.header h1{font-size:20px;font-weight:900;letter-spacing:2px;color:var(--gold)}
+.header h1{font-size:20px;font-weight:900;letter-spacing:2px;color:var(--accent)}
 .header .mode-badge{font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border:1px solid var(--border);margin-left:12px}
-.header .mode-badge.owner{background:var(--bg3);color:var(--gold);border-color:var(--gold)}
-.header .mode-badge.staff{background:var(--bg3);color:var(--green);border-color:var(--green)}
+.header .mode-badge.owner{background:var(--bg-tertiary);color:var(--accent);border-color:var(--accent)}
+.header .mode-badge.staff{background:var(--bg-tertiary);color:var(--green);border-color:var(--green)}
 .header-right{display:flex;align-items:center;gap:16px}
-.status-dot{width:10px;height:10px;background:var(--dim)}
+.status-dot{width:10px;height:10px;background:var(--text-muted)}
 .status-dot.online{background:var(--green);border:1px solid var(--green)}
 .status-dot.offline{background:var(--red)}
-.header-info{font-size:12px;color:var(--dim)}
+.header-info{font-size:12px;color:var(--text-muted)}
 .btn-header{
-  background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 14px;
+  background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-primary);padding:6px 14px;
   font-size:12px;cursor:pointer;transition:.2s;
 }
-.btn-header:hover{border-color:var(--gold)}
+.btn-header:hover{border-color:var(--accent)}
 .btn-logout{background:var(--red)!important;border-color:var(--red)!important}
 .btn-logout:hover{background:#8b3a36!important}
 
 /* SIDEBAR */
 .sidebar{
-  position:fixed;left:0;top:56px;bottom:0;width:240px;background:var(--bg2);
+  position:fixed;left:0;top:56px;bottom:0;width:240px;background:var(--bg-secondary);
   border-right:1px solid var(--border);overflow-y:auto;padding:16px 0;z-index:90;
 }
 .nav-item{
-  display:flex;align-items:center;gap:12px;padding:12px 20px;color:var(--dim);
+  display:flex;align-items:center;gap:12px;padding:12px 20px;color:var(--text-muted);
   font-size:13px;cursor:pointer;transition:.2s;border-left:3px solid transparent;
 }
-.nav-item:hover{color:var(--text);background:var(--bg3)}
-.nav-item.active{color:var(--text);background:var(--bg3);border-left-color:var(--gold)}
+.nav-item:hover{color:var(--text-primary);background:var(--bg-tertiary)}
+.nav-item.active{color:var(--text-primary);background:var(--bg-tertiary);border-left-color:var(--accent)}
 .nav-item svg{width:18px;height:18px;opacity:.7}
 .nav-item.active svg{opacity:1}
-.nav-section{margin:16px 20px 8px;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);opacity:.5}
+.nav-section{margin:16px 20px 8px;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);opacity:.5}
 
 /* CONTENT */
 .content{margin-left:240px;padding:76px 24px 24px;min-height:100vh}
@@ -121,103 +126,105 @@ body{
 /* CARDS */
 .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
 .stat-card{
-  background:var(--bg2);border:1px solid var(--border);padding:20px;
-  transition:.2s;
+  background:var(--bg-secondary);border:1px solid var(--border);padding:20px;
+  transition:.2s;border-radius:var(--radius-md);
 }
-.stat-card:hover{border-color:var(--gold)}
-.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:8px}
+.stat-card:hover{border-color:var(--accent)}
+.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px}
 .stat-card .value{font-size:32px;font-weight:800}
-.stat-card.blue .value{color:var(--silver2)}
-.stat-card.yellow .value{color:var(--gold)}
+.stat-card.blue .value{color:var(--text-primary)}
+.stat-card.yellow .value{color:var(--accent)}
 .stat-card.green .value{color:var(--green)}
 .stat-card.red .value{color:var(--red)}
-.stat-card .change{font-size:12px;color:var(--dim);margin-top:4px}
+.stat-card .change{font-size:12px;color:var(--text-muted);margin-top:4px}
 
 /* PANELS */
 .panel{
-  background:var(--bg2);border:1px solid var(--border);margin-bottom:20px;overflow:hidden;
+  background:var(--bg-secondary);border:1px solid var(--border);margin-bottom:20px;overflow:hidden;
+  border-radius:var(--radius-md);
 }
 .panel-header{
   padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;
-  background:var(--bg3);
+  background:var(--bg-tertiary);
 }
-.panel-header h3{font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--silver2)}
+.panel-header h3{font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-primary)}
 .panel-body{padding:20px}
 
 /* BUTTONS */
 .btn{
-  background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 16px;
-  font-size:12px;font-weight:600;cursor:pointer;transition:.2s;
+  background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-primary);padding:8px 16px;
+  font-size:12px;font-weight:600;cursor:pointer;transition:.2s;border-radius:var(--radius-md);
 }
-.btn:hover{border-color:var(--gold)}
-.btn-primary{background:var(--gold);border-color:var(--gold2);color:var(--bg)}
-.btn-primary:hover{background:var(--gold2)}
-.btn-success{background:var(--green);border-color:var(--green);color:var(--bg)}
+.btn:hover{border-color:var(--accent)}
+.btn-primary{background:var(--accent);border-color:var(--accent-light);color:var(--bg-primary)}
+.btn-primary:hover{background:var(--accent-light)}
+.btn-success{background:var(--green);border-color:var(--green);color:var(--bg-primary)}
 .btn-success:hover{background:#5a7a5a}
-.btn-danger{background:var(--red);border-color:var(--red);color:var(--text)}
+.btn-danger{background:var(--red);border-color:var(--red);color:var(--text-primary)}
 .btn-danger:hover{background:#8b3a36}
-.btn-warning{background:var(--gold);border-color:var(--gold2);color:var(--bg)}
-.btn-warning:hover{background:var(--gold2)}
-.btn-magenta{background:var(--magenta);border-color:var(--magenta);color:var(--text)}
-.btn-cyan{background:var(--cyan);border-color:var(--cyan);color:var(--text)}
+.btn-warning{background:var(--accent);border-color:var(--accent-light);color:var(--bg-primary)}
+.btn-warning:hover{background:var(--accent-light)}
+.btn-magenta{background:var(--magenta);border-color:var(--magenta);color:var(--text-primary)}
+.btn-cyan{background:var(--accent);border-color:var(--accent);color:var(--text-primary)}
 .btn-group{display:flex;gap:8px;flex-wrap:wrap}
 
 /* TABLES */
 .data-table{width:100%;border-collapse:collapse;font-size:12px}
 .data-table th{
-  text-align:left;padding:10px 12px;background:var(--bg3);color:var(--silver2);
+  text-align:left;padding:10px 12px;background:var(--bg-tertiary);color:var(--text-primary);
   font-size:11px;text-transform:uppercase;letter-spacing:1px;position:sticky;top:0;
 }
-.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--dim)}
-.data-table tr:hover td{background:var(--bg3);color:var(--text)}
-.data-table .action-search{color:var(--gold)}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-muted)}
+.data-table tr:hover td{background:var(--bg-tertiary);color:var(--text-primary)}
+.data-table .action-search{color:var(--accent)}
 .data-table .action-watch{color:var(--green)}
-.data-table .action-download{color:var(--silver2)}
+.data-table .action-download{color:var(--text-primary)}
 .data-table .action-chat{color:var(--magenta)}
 .table-wrap{max-height:400px;overflow-y:auto}
 
 /* FORMS */
 .input{
-  background:var(--bg3);border:1px solid var(--border);
-  padding:10px 14px;color:var(--text);font-size:13px;outline:none;transition:.2s;width:100%;
+  background:var(--bg-tertiary);border:1px solid var(--border);
+  padding:10px 14px;color:var(--text-primary);font-size:13px;outline:none;transition:.2s;width:100%;
+  border-radius:var(--radius-md);
 }
-.input:focus{border-color:var(--gold)}
-.input::placeholder{color:var(--dim)}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(61,180,242,0.15)}
+.input::placeholder{color:var(--text-muted)}
 textarea.input{min-height:120px;resize:vertical;font-family:'Consolas',monospace}
 
 /* CHAT */
-.chat-box{height:300px;overflow-y:auto;padding:16px;background:var(--bg);margin-bottom:12px;border:1px solid var(--border)}
-.chat-msg{margin-bottom:12px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.5;border:1px solid var(--border)}
-.chat-msg.user{margin-left:auto;background:var(--bg3);border-color:var(--border)}
-.chat-msg.ai{margin-right:auto;background:var(--bg2);border-color:var(--border)}
+.chat-box{height:300px;overflow-y:auto;padding:16px;background:var(--bg-primary);margin-bottom:12px;border:1px solid var(--border)}
+.chat-msg{margin-bottom:12px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.5;border-radius:var(--radius-md)}
+.chat-msg.user{margin-left:auto;background:var(--bg-tertiary);border-color:var(--border)}
+.chat-msg.ai{margin-right:auto;background:var(--bg-secondary);border-color:var(--border)}
 .chat-msg .name{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;opacity:.6}
-.chat-msg.user .name{color:var(--gold)}
-.chat-msg.ai .name{color:var(--silver2)}
+.chat-msg.user .name{color:var(--accent)}
+.chat-msg.ai .name{color:var(--text-primary)}
 
 /* CODE BLOCKS */
 .code-block{
-  background:var(--bg);border:1px solid var(--border);
+  background:var(--bg-primary);border:1px solid var(--border);
   padding:16px;font-family:'Consolas',monospace;font-size:12px;overflow-x:auto;white-space:pre-wrap;
-  color:var(--silver2);line-height:1.6;
+  color:var(--text-primary);line-height:1.6;
 }
 
 /* TOAST */
 .toast{
-  position:fixed;top:66px;right:16px;background:var(--bg2);border:1px solid var(--border);
-  padding:12px 18px;color:var(--text);font-size:13px;z-index:2000;
+  position:fixed;top:66px;right:16px;background:var(--bg-secondary);border:1px solid var(--border);
+  padding:12px 18px;color:var(--text-primary);font-size:13px;z-index:2000;
   transform:translateX(420px);transition:.4s cubic-bezier(.4,0,.2,1);
   box-shadow:0 10px 30px rgba(0,0,0,0.5);max-width:320px;
 }
 .toast.show{transform:translateX(0)}
-.toast.success{border-color:var(--gold)}
+.toast.success{border-color:var(--green);border-left:3px solid var(--green)}
 .toast.error{border-color:var(--red)}
 
 /* LOADING */
-.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);animation:spin 1s linear infinite;display:inline-block;vertical-align:middle}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);animation:spin 1s linear infinite;display:inline-block;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* EMPTY STATE */
-.empty{text-align:center;padding:40px;color:var(--dim);font-size:13px}
+.empty{text-align:center;padding:40px;color:var(--text-muted);font-size:13px}
 
 /* SCROLLBAR for panels */
 .scroll-box{max-height:350px;overflow-y:auto;padding-right:8px}
@@ -252,14 +259,20 @@ textarea.input{min-height:120px;resize:vertical;font-family:'Consolas',monospace
       <button class="btn-orange" onclick="sendUnlockRequest()">Send Unlock Request to Admin</button>
       <div class="login-status" id="unlock-status"></div>
     </div>
+    <div class="emergency-box" id="emergency-box" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <p style="color:var(--text-muted);font-size:11px;margin-bottom:8px">Locked out? Use your emergency bypass key.</p>
+      <input type="password" id="emergency-key" class="input" placeholder="Enter emergency key" onkeypress="if(event.key==='Enter')emergencyBypass()" style="margin-bottom:8px">
+      <button class="btn btn-primary" style="width:100%" onclick="emergencyBypass()">Emergency Unlock</button>
+      <div class="login-status" id="emergency-status"></div>
+    </div>
   </div>
 </div>
 
 <!-- MODE SELECTOR -->
 <div class="mode-screen" id="mode-screen">
   <div class="mode-box">
-    <h1 style="font-size:28px;margin-bottom:8px;background:linear-gradient(135deg,var(--blue),var(--silver2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">KYRO</h1>
-    <h2 style="font-size:12px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:30px">Select Your Mode</h2>
+    <h1 style="font-size:28px;margin-bottom:8px;background:linear-gradient(135deg,var(--accent),var(--accent-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent">KYRO</h1>
+    <h2 style="font-size:12px;color:var(--text-muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:30px">Select Your Mode</h2>
     <div class="mode-card owner" onclick="selectMode('owner')">
       <h3>OWNER</h3>
       <p>Full Control + AI Superpowers</p>
@@ -345,10 +358,10 @@ textarea.input{min-height:120px;resize:vertical;font-family:'Consolas',monospace
         <div class="panel-header"><h3>System Status</h3><span class="btn" onclick="checkStatus()">Check Now</span></div>
         <div class="panel-body">
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px">
-            <div><div style="font-size:11px;color:var(--dim);text-transform:uppercase">AnimeHeaven</div><div id="st-ah" style="font-size:18px;font-weight:700;color:var(--dim)">Checking...</div></div>
-            <div><div style="font-size:11px;color:var(--dim);text-transform:uppercase">AniList</div><div id="st-anilist" style="font-size:18px;font-weight:700;color:var(--dim)">Checking...</div></div>
-            <div><div style="font-size:11px;color:var(--dim);text-transform:uppercase">Groq AI</div><div id="st-groq" style="font-size:18px;font-weight:700;color:var(--dim)">Checking...</div></div>
-            <div><div style="font-size:11px;color:var(--dim);text-transform:uppercase">FFmpeg</div><div id="st-ffmpeg" style="font-size:18px;font-weight:700;color:var(--dim)">Checking...</div></div>
+            <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase">AnimeHeaven</div><div id="st-ah" style="font-size:18px;font-weight:700;color:var(--text-muted)">Checking...</div></div>
+            <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase">AniList</div><div id="st-anilist" style="font-size:18px;font-weight:700;color:var(--text-muted)">Checking...</div></div>
+            <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Groq AI</div><div id="st-groq" style="font-size:18px;font-weight:700;color:var(--text-muted)">Checking...</div></div>
+            <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase">FFmpeg</div><div id="st-ffmpeg" style="font-size:18px;font-weight:700;color:var(--text-muted)">Checking...</div></div>
           </div>
         </div>
       </div>
@@ -495,7 +508,7 @@ textarea.input{min-height:120px;resize:vertical;font-family:'Consolas',monospace
         <div class="panel-header"><h3>Server Status</h3></div>
         <div class="panel-body">
           <div style="font-size:18px;font-weight:700" id="server-status">Running</div>
-          <div style="color:var(--dim);margin-top:8px" id="server-msg">Server is online and accepting visitors</div>
+          <div style="color:var(--text-muted);margin-top:8px" id="server-msg">Server is online and accepting visitors</div>
         </div>
       </div>
     </div>
@@ -515,6 +528,8 @@ textarea.input{min-height:120px;resize:vertical;font-family:'Consolas',monospace
           <input class="input" id="unlock-new-pwd" placeholder="New password (optional)" style="margin-top:10px">
           <button class="btn btn-success" style="margin-top:12px" onclick="unlockUser()">Unlock User</button>
           <button class="btn btn-warning" style="margin-top:12px" onclick="changePassword()">Change Admin Password</button>
+          <hr style="border-color:var(--border);margin:16px 0">
+          <button class="btn btn-danger" style="width:100%" onclick="resetAllLockouts()">Reset All Lockouts (Clear All)</button>
         </div>
       </div>
     </div>
@@ -589,6 +604,36 @@ async function sendUnlockRequest(){
   }
 }
 
+async function emergencyBypass(){
+  const key=document.getElementById('emergency-key').value.trim();
+  if(!key)return;
+  document.getElementById('emergency-status').textContent='Checking...';
+  try{
+    const res=await fetch('/api/password/check',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:key})
+    });
+    const data=await res.json();
+    if(data.success && data.bypass){
+      document.getElementById('emergency-status').textContent='Bypass successful! Enter your regular password.';
+      document.getElementById('emergency-status').style.color='var(--green)';
+      document.getElementById('unlock-section').style.display='none';
+      document.getElementById('emergency-box').style.display='none';
+      document.getElementById('login-pwd').disabled=false;
+      document.getElementById('login-btn').disabled=false;
+      document.getElementById('login-attempts').textContent='Attempts remaining: 5';
+      document.getElementById('login-attempts').className='attempts ok';
+      document.getElementById('login-status').textContent='Lockout cleared! Enter your regular password.';
+      document.getElementById('login-status').style.color='var(--green)';
+    }else{
+      document.getElementById('emergency-status').textContent='Invalid emergency key.';
+      document.getElementById('emergency-status').style.color='var(--red)';
+    }
+  }catch(e){
+    document.getElementById('emergency-status').textContent='Error: '+e.message;
+  }
+}
+
 // ===== MODE SELECT =====
 function selectMode(mode){
   USER_MODE=mode;
@@ -651,7 +696,7 @@ async function checkStatus(){
     document.getElementById('st-groq').textContent=data.groq==='connected'?'Connected':'No Key';
     document.getElementById('st-groq').style.color=data.groq==='connected'?'var(--green)':'var(--yellow)';
     document.getElementById('st-ffmpeg').textContent=data.ffmpeg==='available'?'Available':'Not Installed';
-    document.getElementById('st-ffmpeg').style.color=data.ffmpeg==='available'?'var(--green)':'var(--dim)';
+    document.getElementById('st-ffmpeg').style.color=data.ffmpeg==='available'?'var(--green)':'var(--text-muted)';
     document.getElementById('conn-dot').className='status-dot online';
   }catch(e){
     document.getElementById('conn-dot').className='status-dot offline';
@@ -687,6 +732,16 @@ async function refreshVisitors(){
 
 function filterVisitors(f){visitorFilter=f;refreshVisitors();}
 
+async function resetAllLockouts(){
+  if(!confirm('Reset ALL lockouts? This will unlock every IP immediately.'))return;
+  try{
+    const data=await api('/admin/api/reset-lockouts',{method:'POST'});
+    showToast(data.message,'success');
+  }catch(e){
+    showToast('Error: '+e.message,'error');
+  }
+}
+
 // ===== ANALYTICS =====
 async function refreshAnalytics(){
   try{
@@ -699,7 +754,7 @@ async function refreshAnalytics(){
     const searches=data.top_searches||[];
     document.getElementById('top-searches').innerHTML=searches.length?searches.map((x,i)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>${i+1}. ${x[0]}</span><span style="color:var(--yellow);font-weight:700">${x[1]}</span></div>`).join(''):'No searches yet';
     const devices=data.device_breakdown||{};
-    document.getElementById('device-breakdown').innerHTML=Object.keys(devices).length?Object.entries(devices).sort((a,b)=>b[1]-a[1]).map(([d,c])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>${d}</span><span style="color:var(--blue);font-weight:700">${c}</span></div>`).join(''):'No device data';
+    document.getElementById('device-breakdown').innerHTML=Object.keys(devices).length?Object.entries(devices).sort((a,b)=>b[1]-a[1]).map(([d,c])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>${d}</span><span style="color:var(--accent);font-weight:700">${c}</span></div>`).join(''):'No device data';
   }catch(e){}
 }
 
@@ -713,7 +768,7 @@ async function refreshErrors(){
     el.innerHTML=errors.map(e=>{
       const status=e.analyzed?'<span style="color:var(--green)">[AI DONE]</span>':'<span style="color:var(--yellow)">[NEW]</span>';
       const ts=e.timestamp?e.timestamp.slice(11,19):'--:--';
-      return `<div style="padding:10px;border-bottom:1px solid var(--border);font-size:12px">${status} <strong>${ts}</strong> | ${e.type} | ${e.message.slice(0,80)}${e.ai_diagnosis?'<div style="color:var(--dim);margin-top:4px">AI: '+e.ai_diagnosis.slice(0,100)+'</div>':''}</div>`;
+      return `<div style="padding:10px;border-bottom:1px solid var(--border);font-size:12px">${status} <strong>${ts}</strong> | ${e.type} | ${e.message.slice(0,80)}${e.ai_diagnosis?'<div style="color:var(--text-muted);margin-top:4px">AI: '+e.ai_diagnosis.slice(0,100)+'</div>':''}</div>`;
     }).join('');
   }catch(e){}
 }
@@ -723,7 +778,7 @@ async function analyzeErrors(){
   try{
     const data=await api('/admin/api/errors/analyze',{method:'POST'});
     if(data.results&&data.results.length){
-      document.getElementById('ai-results').innerHTML=data.results.map(r=>`<div style="margin-bottom:16px"><div style="color:var(--yellow);font-weight:700;margin-bottom:4px">${r.type}</div><div style="color:var(--dim);font-size:12px;margin-bottom:8px">${r.message}</div><div style="color:var(--green);margin-bottom:4px"><strong>DIAGNOSIS:</strong></div><div style="margin-bottom:8px">${r.diagnosis}</div><div style="color:var(--blue);margin-bottom:4px"><strong>FIX:</strong></div><div>${r.fix}</div></div>`).join('<hr style="border-color:var(--border);margin:16px 0">');
+      document.getElementById('ai-results').innerHTML=data.results.map(r=>`<div style="margin-bottom:16px"><div style="color:var(--yellow);font-weight:700;margin-bottom:4px">${r.type}</div><div style="color:var(--text-muted);font-size:12px;margin-bottom:8px">${r.message}</div><div style="color:var(--green);margin-bottom:4px"><strong>DIAGNOSIS:</strong></div><div style="margin-bottom:8px">${r.diagnosis}</div><div style="color:var(--accent);margin-bottom:4px"><strong>FIX:</strong></div><div>${r.fix}</div></div>`).join('<hr style="border-color:var(--border);margin:16px 0">');
     }else{
       document.getElementById('ai-results').textContent=data.message||'No new errors to analyze.';
     }
@@ -797,7 +852,7 @@ async function refreshBroadcasts(){
   try{
     const data=await api('/admin/api/broadcasts');
     const msgs=data.messages||[];
-    document.getElementById('broadcast-history').innerHTML=msgs.length?msgs.map(m=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--dim);font-size:11px">[${m.timestamp?m.timestamp.slice(11,19):'--:--'}]</span> <span style="color:var(--yellow)">${m.sent_by||'admin'}</span>: ${esc(m.message)}</div>`).join(''):'No broadcasts yet';
+    document.getElementById('broadcast-history').innerHTML=msgs.length?msgs.map(m=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--text-muted);font-size:11px">[${m.timestamp?m.timestamp.slice(11,19):'--:--'}]</span> <span style="color:var(--yellow)">${m.sent_by||'admin'}</span>: ${esc(m.message)}</div>`).join(''):'No broadcasts yet';
   }catch(e){}
 }
 

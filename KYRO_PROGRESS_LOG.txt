@@ -1,0 +1,81 @@
+KYRO AI ANIME - ANILIST UI OVERHAUL - PROGRESS LOG
+=====================================================
+Date: 2026-08-30
+Status: COMPLETE
+
+FILES MODIFIED:
+---------------
+1. app.py
+   - Added emergency bypass system (KYRO_EMERGENCY_KEY env var)
+   - Added /admin/api/reset-lockouts endpoint (POST, owner only)
+   - Modified /api/password/check to check emergency key first
+   - Emergency key bypasses all lockouts instantly and resets attempts
+
+2. index.html (62,794 bytes)
+   - COMPLETE REWRITE with AniList dark theme
+   - Colors: #0b1622 bg, #151f2e cards, #3db4f2 cyan accent
+   - Inter font, rounded corners (8px), subtle shadows
+   - Image zoom on hover, clean scrollbar styling
+   - All original functionality preserved:
+     * AI chat, search, favorites, recently watched
+     * Download queue with resumable downloads
+     * Video player with keyboard shortcuts, auto-next
+     * Speed control, fullscreen, volume controls
+
+3. dashboard.html (46,926 bytes)
+   - Full AniList theme migration (brown/gold -> navy/cyan)
+   - Added emergency bypass UI on locked screen
+   - Added "Reset All Lockouts" button in Unlock Codes tab
+   - Added emergencyBypass() JavaScript function
+   - Added resetAllLockouts() JavaScript function
+   - All panels, cards, buttons, inputs restyled
+   - Focus states with blue glow
+   - Success toast now green (not accent)
+
+4. remote_controller.html (46,583 bytes)
+   - Full AniList theme migration
+   - All color variables replaced
+   - Rounded corners on all UI elements
+   - Status dots with glow effects
+   - Mode card tags with proper backgrounds
+
+HOW TO UNLOCK YOURSELF:
+-----------------------
+Option 1 (FASTEST): Restart the Flask server
+  - FAILED_ATTEMPTS is in-memory, restart clears it
+  - pkill -f "python app.py" && python app.py
+
+Option 2: Emergency Key
+  - export KYRO_EMERGENCY_KEY=your-secret-key
+  - Enter that key on the login screen
+  - Bypasses ALL lockouts instantly
+
+Option 3: Staff Panel
+  - If staff panel still works, use it to access admin
+
+Option 4: Server-side reset (once logged in as owner)
+  - Click "Reset All Lockouts" button in Unlock Codes tab
+
+THEME CHANGES SUMMARY:
+----------------------
+OLD (Steampunk Brown/Gold):
+  --bg: #1a120b      --bg2: #2c1e14     --bg3: #3d2b1f
+  --gold: #c9a227    --gold2: #e8c84a
+  --text: #d4d0c8    --dim: #8a8278
+  Sharp corners, no shadows, brown borders
+
+NEW (AniList Dark/Cyan):
+  --bg-primary: #0b1622    --bg-secondary: #151f2e   --bg-tertiary: #1c2636
+  --accent: #3db4f2        --accent-light: #5cc8ff
+  --text-primary: #e5e7eb  --text-secondary: #9ca3af  --text-muted: #6b7280
+  Rounded corners (4-12px), subtle shadows, blue glow on focus
+  Inter font, clean modern aesthetic
+
+PACKAGE CONTENTS:
+-----------------
+- app.py (backend with emergency bypass)
+- index.html (main app, AniList themed)
+- dashboard.html (admin panel, AniList themed + lockout fixes)
+- remote_controller.html (remote control, AniList themed)
+- build.sh (unchanged, works fine)
+- requirements.txt (unchanged)
