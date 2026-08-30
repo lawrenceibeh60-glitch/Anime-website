@@ -757,52 +757,243 @@ function showSearchHistory(){renderSearchHistory();document.getElementById("sear
 function hideSearchHistoryDelay(){setTimeout(()=>document.getElementById("search-history").classList.remove("show"),200);}
 function searchFromHistory(q){document.getElementById("search-input").value=q;doSearch();}
 
-// ===== DOWNLOAD QUEUE =====
-let downloadQueue=[];let isDownloading=false;
-function addToQueue(ep,quality){
-  const baseName=((currentAnime?.title_english||currentAnime?.title||"episode").replace(/[^a-z0-9]/gi,"_"))+"_EP"+ep.number;
-  const fname=quality==="original"?baseName+".mp4":baseName+"_"+quality+".mp4";
-  const item={id:Date.now()+Math.random(),animeId:currentAnime?.id,title:currentAnime?.title||"Unknown",epNumber:ep.number,epTitle:ep.title,filename:fname,quality:quality,hash:ep.hash,status:"queued",progress:0};
-  downloadQueue.push(item);updateQueueUI();showToast("Added to download queue","success");
-  if(!isDownloading)processQueue();
+// ===== REAL DOWNLOAD SYSTEM (Resumable + Real Progress) =====
+class ResumableDownloader {
+  constructor(item) {
+    this.item = item;
+    this.received = 0;
+    this.total = 0;
+    this.chunks = [];
+    this.aborted = false;
+    this.retryCount = 0;
+    this.maxRetries = 5;
+    this.chunkSize = 2 * 1024 * 1024; // 2MB chunks
+  }
+
+  async start() {
+    this.item.status = "downloading";
+    this.item.progress = 0;
+    updateQueueUI();
+
+    try {
+      // Step 1: Get stream URL
+      const streamRes = await fetch("/api/stream/" + this.item.hash);
+      const streamData = await streamRes.json();
+      if (!streamData.url) throw new Error("Stream URL not found");
+      this.item.streamUrl = streamData.url;
+
+      // Step 2: Get total size via HEAD
+      const headRes = await fetch("/api/proxy-stream?url=" + encodeURIComponent(streamData.url), { method: "HEAD" });
+      this.total = parseInt(headRes.headers.get("Content-Length") || "0");
+      this.item.totalBytes = this.total;
+      this.item.receivedBytes = 0;
+
+      // Step 3: Download with resume capability
+      await this.downloadWithResume();
+
+      if (this.aborted) return;
+
+      // Step 4: Assemble and save
+      this.item.status = "assembling";
+      updateQueueUI();
+      await this.saveFile();
+
+      this.item.status = "done";
+      this.item.progress = 100;
+      updateQueueUI();
+      showToast("Download complete: " + this.item.filename, "success");
+
+    } catch (err) {
+      if (this.aborted) return;
+      this.item.status = "error";
+      this.item.errorMsg = err.message;
+      updateQueueUI();
+      showToast("Download failed: " + err.message, "error");
+    }
+  }
+
+  async downloadWithResume() {
+    const url = "/api/download?url=" + encodeURIComponent(this.item.streamUrl) + "&filename=" + encodeURIComponent(this.item.filename) + "&quality=" + this.item.quality;
+
+    while (this.received < this.total || this.total === 0) {
+      if (this.aborted) return;
+
+      const start = this.received;
+      const end = this.total ? Math.min(start + this.chunkSize - 1, this.total - 1) : start + this.chunkSize - 1;
+      const rangeHeader = this.total ? `bytes=${start}-${end}` : `bytes=${start}-`;
+
+      try {
+        const res = await fetch(url, {
+          headers: { "Range": rangeHeader },
+          signal: this.item.controller?.signal
+        });
+
+        if (!res.ok && res.status !== 206) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const reader = res.body.getReader();
+        let chunkBytes = 0;
+
+        while (true) {
+          if (this.aborted) { reader.releaseLock(); return; }
+          const { done, value } = await reader.read();
+          if (done) break;
+          this.chunks.push(value);
+          this.received += value.length;
+          chunkBytes += value.length;
+          this.item.receivedBytes = this.received;
+          if (this.total) {
+            this.item.progress = Math.floor((this.received / this.total) * 100);
+          } else {
+            this.item.progress = Math.min(95, Math.floor(this.received / (10 * 1024 * 1024))); // Guess 10MB chunks
+          }
+          updateQueueUI();
+        }
+
+        // If we got less than requested, we might be at the end
+        if (this.total && this.received >= this.total) break;
+        if (!this.total && chunkBytes === 0) break; // Unknown size, no data = done
+        this.retryCount = 0; // Reset on success
+
+      } catch (err) {
+        if (this.aborted) return;
+        this.retryCount++;
+        if (this.retryCount > this.maxRetries) {
+          throw new Error(`Failed after ${this.maxRetries} retries: ${err.message}`);
+        }
+        // Wait before retry (exponential backoff)
+        await new Promise(r => setTimeout(r, 1000 * Math.pow(2, this.retryCount - 1)));
+        showToast(`Retrying download... (${this.retryCount}/${this.maxRetries})`, "warn");
+      }
+    }
+  }
+
+  async saveFile() {
+    // Merge all chunks into one Uint8Array
+    let totalLen = 0;
+    for (const c of this.chunks) totalLen += c.length;
+    const merged = new Uint8Array(totalLen);
+    let offset = 0;
+    for (const c of this.chunks) {
+      merged.set(c, offset);
+      offset += c.length;
+    }
+    const blob = new Blob([merged], { type: "video/mp4" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = this.item.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    this.chunks = []; // Free memory
+  }
+
+  abort() {
+    this.aborted = true;
+    if (this.item.controller) this.item.controller.abort();
+    this.item.status = "cancelled";
+    updateQueueUI();
+  }
 }
-function updateQueueUI(){
-  const list=document.getElementById("queue-list");
-  const badge=document.getElementById("queue-badge");
-  const pending=downloadQueue.filter(q=>q.status==="queued"||q.status==="downloading").length;
-  badge.textContent=pending;badge.classList.toggle("hidden",!pending);
-  if(!downloadQueue.length){list.innerHTML='<div style="text-align:center;padding:20px;color:#666;font-size:12px">No downloads</div>';return;}
-  list.innerHTML=downloadQueue.slice().reverse().map(q=>`
-    <div class="queue-item">
-      <div style="flex:1">
-        <div class="q-name">${esc(q.title)} - EP${esc(q.epNumber)} (${esc(q.quality)})</div>
-        <div class="q-bar"><div style="width:${q.progress}%"></div></div>
+
+let downloadQueue = [];
+let activeDownload = null;
+
+function addToQueue(ep, quality) {
+  const baseName = ((currentAnime?.title_english || currentAnime?.title || "episode").replace(/[^a-z0-9]/gi, "_")) + "_EP" + ep.number;
+  const fname = quality === "original" ? baseName + ".mp4" : baseName + "_" + quality + ".mp4";
+  const item = {
+    id: Date.now() + Math.random(),
+    animeId: currentAnime?.id,
+    title: currentAnime?.title || "Unknown",
+    epNumber: ep.number,
+    epTitle: ep.title,
+    filename: fname,
+    quality: quality,
+    hash: ep.hash,
+    status: "queued",
+    progress: 0,
+    receivedBytes: 0,
+    totalBytes: 0,
+    errorMsg: "",
+    controller: new AbortController()
+  };
+  downloadQueue.push(item);
+  updateQueueUI();
+  showToast("Added to download queue", "success");
+  if (!activeDownload) processQueue();
+}
+
+function updateQueueUI() {
+  const list = document.getElementById("queue-list");
+  const badge = document.getElementById("queue-badge");
+  const pending = downloadQueue.filter(q => q.status === "queued" || q.status === "downloading" || q.status === "assembling").length;
+  badge.textContent = pending;
+  badge.classList.toggle("hidden", !pending);
+  if (!downloadQueue.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px">No downloads</div>';
+    return;
+  }
+  list.innerHTML = downloadQueue.slice().reverse().map(q => {
+    const sizeText = q.totalBytes > 0
+      ? `${formatBytes(q.receivedBytes)} / ${formatBytes(q.totalBytes)}`
+      : q.receivedBytes > 0 ? `${formatBytes(q.receivedBytes)} downloaded` : "";
+    const pct = q.progress > 0 ? ` (${q.progress}%)` : "";
+    return `
+      <div class="queue-item">
+        <div style="flex:1">
+          <div class="q-name">${esc(q.title)} - EP${esc(q.epNumber)} (${esc(q.quality)}) ${sizeText}${pct}</div>
+          <div class="q-bar"><div style="width:${q.progress}%"></div></div>
+        </div>
+        <div class="q-status ${q.status}">${q.status}</div>
+        ${q.status === "queued" || q.status === "downloading" ? `<button onclick="cancelDownload('${q.id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px" title="Cancel">&times;</button>` : ""}
       </div>
-      <div class="q-status ${q.status}">${q.status}</div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
-async function processQueue(){
-  if(isDownloading||!downloadQueue.some(q=>q.status==="queued"))return;
-  isDownloading=true;updateQueueUI();
-  const item=downloadQueue.find(q=>q.status==="queued");
-  if(!item){isDownloading=false;return;}
-  item.status="downloading";updateQueueUI();
-  try{
-    const r=await fetch("/api/stream/"+item.hash);
-    const data=await r.json();
-    if(data.url){
-      // Simulate progress
-      let prog=0;const interval=setInterval(()=>{prog+=Math.random()*15;if(prog>90)prog=90;item.progress=Math.floor(prog);updateQueueUI();},500);
-      // Start actual download
-      const a=document.createElement("a");
-      a.href="/api/download?url="+encodeURIComponent(data.url)+"&filename="+encodeURIComponent(item.filename)+"&quality="+item.quality;
-      a.download=item.filename;document.body.appendChild(a);a.click();document.body.removeChild(a);
-      setTimeout(()=>{clearInterval(interval);item.progress=100;item.status="done";isDownloading=false;updateQueueUI();processQueue();},3000);
-    }else{item.status="error";isDownloading=false;updateQueueUI();processQueue();}
-  }catch(e){item.status="error";isDownloading=false;updateQueueUI();processQueue();}
+
+function formatBytes(bytes) {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
-function toggleQueue(){document.getElementById("queue-panel").classList.toggle("show");}
+
+function cancelDownload(id) {
+  const item = downloadQueue.find(q => q.id == id);
+  if (!item) return;
+  if (activeDownload && activeDownload.item.id == id) {
+    activeDownload.abort();
+    activeDownload = null;
+  }
+  item.status = "cancelled";
+  updateQueueUI();
+  // Remove from queue after a delay
+  setTimeout(() => {
+    downloadQueue = downloadQueue.filter(q => q.id != id);
+    updateQueueUI();
+    if (!activeDownload) processQueue();
+  }, 2000);
+}
+
+async function processQueue() {
+  const next = downloadQueue.find(q => q.status === "queued");
+  if (!next) { activeDownload = null; return; }
+  activeDownload = new ResumableDownloader(next);
+  await activeDownload.start();
+  activeDownload = null;
+  // Clean up completed/cancelled/error items after a bit
+  setTimeout(() => {
+    downloadQueue = downloadQueue.filter(q => q.status === "queued" || q.status === "downloading" || q.status === "assembling");
+    updateQueueUI();
+  }, 5000);
+  processQueue(); // Process next
+}
+
+function toggleQueue() { document.getElementById("queue-panel").classList.toggle("show"); }
 
 // ===== TABS =====
 function switchTab(tab){
@@ -1094,127 +1285,116 @@ async function playEpisode(index){
   }catch(e){showToast("Error loading stream: "+e.message,"error");}
 }
 
-async function dlEpisode(index){
-  const ep=currentEpisodes[index];
-  if(!ep||!ep.hash){showToast("No download link for this episode","error");return;}
-  const qualitySelect=document.getElementById("dl-quality-"+index);
-  const quality=qualitySelect?qualitySelect.value:"original";
-  showToast("Getting download link...");
-  try{
-    const r=await fetch("/api/stream/"+ep.hash);
-    const data=await r.json();
-    if(data.url){
-      const baseName=((currentAnime?.title_english||currentAnime?.title||"episode").replace(/[^a-z0-9]/gi,"_"))+"_EP"+ep.number;
-      const fname=quality==="original"?baseName+".mp4":baseName+"_"+quality+".mp4";
-      const a=document.createElement("a");
-      a.href="/api/download?url="+encodeURIComponent(data.url)+"&filename="+encodeURIComponent(fname)+"&quality="+quality;
-      a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);
-      showToast("Downloading: "+fname,"success");
-      saveProgress(currentAnime.id,index);
-    }else{showToast("Download URL not found on server","error");}
-  }catch(e){showToast("Download failed: "+e.message,"error");}
+async function dlEpisode(index) {
+  const ep = currentEpisodes[index];
+  if (!ep || !ep.hash) { showToast("No download link for this episode", "error"); return; }
+  const qualitySelect = document.getElementById("dl-quality-" + index);
+  const quality = qualitySelect ? qualitySelect.value : "original";
+  addToQueue(ep, quality);
+  showToast("Download queued: " + ep.title, "success");
+  saveProgress(currentAnime.id, index);
 }
 
-function queueEpisode(index){
-  const ep=currentEpisodes[index];
-  if(!ep||!ep.hash){showToast("No download link for this episode","error");return;}
-  const qualitySelect=document.getElementById("dl-quality-"+index);
-  const quality=qualitySelect?qualitySelect.value:"original";
-  addToQueue(ep,quality);
+function queueEpisode(index) {
+  const ep = currentEpisodes[index];
+  if (!ep || !ep.hash) { showToast("No download link for this episode", "error"); return; }
+  const qualitySelect = document.getElementById("dl-quality-" + index);
+  const quality = qualitySelect ? qualitySelect.value : "original";
+  addToQueue(ep, quality);
 }
 
-function downloadCurrent(){if(currentEpisodes[currentEpIndex])dlEpisode(currentEpIndex);}
-function nextEpisode(){if(currentEpIndex<currentEpisodes.length-1){playEpisode(currentEpIndex+1);}else{showToast("This is the last episode","error");}}
-function closePlayer(){
+function downloadCurrent() { if (currentEpisodes[currentEpIndex]) dlEpisode(currentEpIndex); }
+function nextEpisode() { if (currentEpIndex < currentEpisodes.length - 1) { playEpisode(currentEpIndex + 1); } else { showToast("This is the last episode", "error"); } }
+function closePlayer() {
   autoNextCancel();
   document.getElementById("video-player").pause();
-  document.getElementById("video-player").src="";
+  document.getElementById("video-player").src = "";
   document.getElementById("player-overlay").classList.add("hidden");
 }
 
 // ===== PLAYBACK SPEED =====
-function changeSpeed(speed){
-  const v=document.getElementById("video-player");
-  v.playbackRate=parseFloat(speed);
-  showKeyToast("Speed: "+speed+"x");
+function changeSpeed(speed) {
+  const v = document.getElementById("video-player");
+  v.playbackRate = parseFloat(speed);
+  showKeyToast("Speed: " + speed + "x");
 }
 
 // ===== AUTO-NEXT EPISODE =====
-let autoNextTimer=null;
-let autoNextCount=5;
-function setupAutoNext(){
-  const v=document.getElementById("video-player");
-  v.addEventListener("ended",onVideoEnded);
+let autoNextTimer = null;
+let autoNextCount = 5;
+function setupAutoNext() {
+  const v = document.getElementById("video-player");
+  v.addEventListener("ended", onVideoEnded);
 }
-function onVideoEnded(){
-  if(currentEpIndex>=currentEpisodes.length-1)return;
-  const nextEp=currentEpisodes[currentEpIndex+1];
-  if(!nextEp||!nextEp.hash)return;
-  document.getElementById("auto-next-title").textContent=nextEp.title||("Episode "+nextEp.number);
+function onVideoEnded() {
+  if (currentEpIndex >= currentEpisodes.length - 1) return;
+  const nextEp = currentEpisodes[currentEpIndex + 1];
+  if (!nextEp || !nextEp.hash) return;
+  document.getElementById("auto-next-title").textContent = nextEp.title || ("Episode " + nextEp.number);
   document.getElementById("auto-next-overlay").classList.add("show");
-  autoNextCount=5;
-  document.getElementById("auto-next-countdown").textContent=autoNextCount;
-  autoNextTimer=setInterval(()=>{
+  autoNextCount = 5;
+  document.getElementById("auto-next-countdown").textContent = autoNextCount;
+  autoNextTimer = setInterval(() => {
     autoNextCount--;
-    document.getElementById("auto-next-countdown").textContent=autoNextCount;
-    if(autoNextCount<=0){clearInterval(autoNextTimer);autoNextPlay();}
-  },1000);
+    document.getElementById("auto-next-countdown").textContent = autoNextCount;
+    if (autoNextCount <= 0) { clearInterval(autoNextTimer); autoNextPlay(); }
+  }, 1000);
 }
-function autoNextPlay(){
+function autoNextPlay() {
   autoNextCancel();
-  if(currentEpIndex<currentEpisodes.length-1)playEpisode(currentEpIndex+1);
+  if (currentEpIndex < currentEpisodes.length - 1) playEpisode(currentEpIndex + 1);
 }
-function autoNextCancel(){
-  if(autoNextTimer){clearInterval(autoNextTimer);autoNextTimer=null;}
+function autoNextCancel() {
+  if (autoNextTimer) { clearInterval(autoNextTimer); autoNextTimer = null; }
   document.getElementById("auto-next-overlay").classList.remove("show");
 }
 
 // ===== KEYBOARD SHORTCUTS =====
-let keyToastTimer=null;
-function showKeyToast(msg){
-  const t=document.getElementById("key-toast");
-  t.textContent=msg;t.classList.add("show");
-  if(keyToastTimer)clearTimeout(keyToastTimer);
-  keyToastTimer=setTimeout(()=>t.classList.remove("show"),1500);
+let keyToastTimer = null;
+function showKeyToast(msg) {
+  const t = document.getElementById("key-toast");
+  t.textContent = msg; t.classList.add("show");
+  if (keyToastTimer) clearTimeout(keyToastTimer);
+  keyToastTimer = setTimeout(() => t.classList.remove("show"), 1500);
 }
-document.addEventListener("keydown",function(e){
-  const overlay=document.getElementById("player-overlay");
-  if(overlay.classList.contains("hidden"))return;
-  const v=document.getElementById("video-player");
-  if(!v.src)return;
-  
+document.addEventListener("keydown", function (e) {
+  const overlay = document.getElementById("player-overlay");
+  if (overlay.classList.contains("hidden")) return;
+  const v = document.getElementById("video-player");
+  if (!v.src) return;
+
   // Don't trigger when typing in chat
-  if(document.activeElement&&document.activeElement.tagName==="INPUT")return;
-  
-  switch(e.code){
+  if (document.activeElement && document.activeElement.tagName === "INPUT") return;
+
+  switch (e.code) {
     case "Space":
       e.preventDefault();
-      if(v.paused){v.play();showKeyToast("Play");}else{v.pause();showKeyToast("Pause");}
+      if (v.paused) { v.play(); showKeyToast("Play"); } else { v.pause(); showKeyToast("Pause"); }
       break;
     case "ArrowLeft":
-      e.preventDefault();v.currentTime=Math.max(0,v.currentTime-10);showKeyToast("-10s");break;
+      e.preventDefault(); v.currentTime = Math.max(0, v.currentTime - 10); showKeyToast("-10s"); break;
     case "ArrowRight":
-      e.preventDefault();v.currentTime=Math.min(v.duration||9999,v.currentTime+10);showKeyToast("+10s");break;
+      e.preventDefault(); v.currentTime = Math.min(v.duration || 9999, v.currentTime + 10); showKeyToast("+10s"); break;
     case "ArrowUp":
-      e.preventDefault();v.volume=Math.min(1,v.volume+0.1);showKeyToast("Vol "+Math.round(v.volume*100)+"%");break;
+      e.preventDefault(); v.volume = Math.min(1, v.volume + 0.1); showKeyToast("Vol " + Math.round(v.volume * 100) + "%"); break;
     case "ArrowDown":
-      e.preventDefault();v.volume=Math.max(0,v.volume-0.1);showKeyToast("Vol "+Math.round(v.volume*100)+"%");break;
+      e.preventDefault(); v.volume = Math.max(0, v.volume - 0.1); showKeyToast("Vol " + Math.round(v.volume * 100) + "%"); break;
     case "KeyN":
-      e.preventDefault();nextEpisode();showKeyToast("Next Episode");break;
+      e.preventDefault(); nextEpisode(); showKeyToast("Next Episode"); break;
     case "KeyF":
       e.preventDefault();
-      if(document.fullscreenElement){document.exitFullscreen();showKeyToast("Exit Fullscreen");}
-      else{v.requestFullscreen();showKeyToast("Fullscreen");}
+      if (document.fullscreenElement) { document.exitFullscreen(); showKeyToast("Exit Fullscreen"); }
+      else { v.requestFullscreen(); showKeyToast("Fullscreen"); }
       break;
     case "KeyM":
-      e.preventDefault();v.muted=!v.muted;showKeyToast(v.muted?"Muted":"Unmuted");break;
+      e.preventDefault(); v.muted = !v.muted; showKeyToast(v.muted ? "Muted" : "Unmuted"); break;
     case "KeyS":
       e.preventDefault();
-      const speeds=[0.5,0.75,1,1.25,1.5,2];
-      const sel=document.getElementById("speed-select");
-      let idx=speeds.indexOf(parseFloat(sel.value));
-      idx=(idx+1)%speeds.length;
-      sel.value=speeds[idx];
+      const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
+      const sel = document.getElementById("speed-select");
+      let idx = speeds.indexOf(parseFloat(sel.value));
+      idx = (idx + 1) % speeds.length;
+      sel.value = speeds[idx];
       changeSpeed(speeds[idx]);
       break;
   }
@@ -1222,80 +1402,40 @@ document.addEventListener("keydown",function(e){
 
 // Init auto-next listener
 setupAutoNext();
-function showSearch(){document.getElementById("search-view").classList.remove("hidden");document.getElementById("detail-view").classList.add("hidden");currentEpisodes=[];currentAhId="";}
+function showSearch() { document.getElementById("search-view").classList.remove("hidden"); document.getElementById("detail-view").classList.add("hidden"); currentEpisodes = []; currentAhId = ""; }
 
 // ===== AI CHAT =====
-async function sendChat(){
-  const input=document.getElementById("chat-input");
-  const msg=input.value.trim();if(!msg)return;input.value="";
-  const box=document.getElementById("chat-messages");
-  box.innerHTML+=`<div class="msg msg-user">${esc(msg)}<div class="msg-time">You</div></div>`;
-  box.scrollTop=box.scrollHeight;chatHistory.push({role:"user",content:msg});
-  try{
-    const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:chatHistory})});
-    const data=await r.json();
-    if(data.reply&&!data.reply.includes("Error")&&!data.reply.includes("error")){
-      box.innerHTML+=`<div class="msg msg-ai"><strong>KYRO:</strong> ${fmt(data.reply)}<div class="msg-time">KYRO</div></div>`;
-      chatHistory.push({role:"assistant",content:data.reply});
-    }else{
-      box.innerHTML+=`<div class="msg msg-ai"><strong>KYRO:</strong> I'm having trouble connecting to my brain right now. Ask me about anime recommendations, genres like action/romance/isekai, or specific shows!<div class="msg-time">KYRO</div></div>`;
+async function sendChat() {
+  const input = document.getElementById("chat-input");
+  const msg = input.value.trim(); if (!msg) return; input.value = "";
+  const box = document.getElementById("chat-messages");
+  box.innerHTML += `<div class="msg msg-user">${esc(msg)}<div class="msg-time">You</div></div>`;
+  box.scrollTop = box.scrollHeight; chatHistory.push({ role: "user", content: msg });
+  try {
+    const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: chatHistory }) });
+    const data = await r.json();
+    if (data.reply && !data.reply.includes("Error") && !data.reply.includes("error")) {
+      box.innerHTML += `<div class="msg msg-ai"><strong>KYRO:</strong> ${fmt(data.reply)}<div class="msg-time">KYRO</div></div>`;
+      chatHistory.push({ role: "assistant", content: data.reply });
+    } else {
+      box.innerHTML += `<div class="msg msg-ai"><strong>KYRO:</strong> I'm having trouble connecting to my brain right now. Ask me about anime recommendations, genres like action/romance/isekai, or specific shows!<div class="msg-time">KYRO</div></div>`;
     }
-  }catch(e){
-    box.innerHTML+=`<div class="msg msg-ai"><strong>KYRO:</strong> Connection issue. Try again in a moment.<div class="msg-time">KYRO</div></div>`;
+  } catch (e) {
+    box.innerHTML += `<div class="msg msg-ai"><strong>KYRO:</strong> Connection issue. Try again in a moment.<div class="msg-time">KYRO</div></div>`;
   }
-  box.scrollTop=box.scrollHeight;
+  box.scrollTop = box.scrollHeight;
 }
 
-function fmt(text){return esc(text).replace(/\n/g,"<br>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");}
-function esc(text){if(!text)return"";const d=document.createElement("div");d.textContent=text;return d.innerHTML;}
+function fmt(text) { return esc(text).replace(/\n/g, "<br>").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
+function esc(text) { if (!text) return ""; const d = document.createElement("div"); d.textContent = text; return d.innerHTML; }
 
-// ===== TURBO DOWNLOAD (Parallel Chunk Downloading) =====
-async function turboDownloadCurrent(){
-  if(!currentEpisodes[currentEpIndex]){showToast("No episode selected","error");return;}
-  const ep=currentEpisodes[currentEpIndex];
-  if(!ep.hash){showToast("No stream available","error");return;}
-  showToast("Preparing turbo download...");
-  try{
-    const r=await fetch("/api/stream/"+ep.hash);
-    const data=await r.json();
-    if(!data.url){showToast("Stream not found","error");return;}
-    const baseName=((currentAnime?.title_english||currentAnime?.title||"episode").replace(/[^a-z0-9]/gi,"_"))+"_EP"+ep.number+".mp4";
-    await turboDownload(data.url, baseName);
-  }catch(e){showToast("Turbo download failed: "+e.message,"error");}
-}
-
-async function turboDownload(url, filename){
-  const CHUNKS=8;
-  const MIN_CHUNK=2*1024*1024;
-  const head=await fetch("/api/proxy-stream?url="+encodeURIComponent(url),{method:"HEAD"});
-  const len=parseInt(head.headers.get("Content-Length")||"0");
-  if(!len){showToast("Cannot determine file size","error");return;}
-  const chunkSize=Math.max(MIN_CHUNK, Math.ceil(len/CHUNKS));
-  const promises=[];
-  const chunks=[];
-  showToast("Turbo downloading with "+CHUNKS+" connections...","success");
-  for(let i=0;i<CHUNKS;i++){
-    const start=i*chunkSize;
-    const end=Math.min(start+chunkSize-1, len-1);
-    promises.push((async()=>{
-      const resp=await fetch("/api/proxy-stream?url="+encodeURIComponent(url),{headers:{"Range":"bytes="+start+"-"+end}});
-      const buf=await resp.arrayBuffer();
-      chunks[i]=new Uint8Array(buf);
-    })());
-  }
-  await Promise.all(promises);
-  let totalLen=0;
-  for(const c of chunks)totalLen+=c.length;
-  const merged=new Uint8Array(totalLen);
-  let offset=0;
-  for(const c of chunks){merged.set(c,offset);offset+=c.length;}
-  const blob=new Blob([merged],{type:"video/mp4"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=filename;
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-  showToast("Turbo download complete!","success");
+// ===== TURBO DOWNLOAD (now uses same resumable queue) =====
+async function turboDownloadCurrent() {
+  if (!currentEpisodes[currentEpIndex]) { showToast("No episode selected", "error"); return; }
+  const ep = currentEpisodes[currentEpIndex];
+  if (!ep.hash) { showToast("No stream available", "error"); return; }
+  showToast("Starting turbo download...");
+  addToQueue(ep, "original");
 }
 
 </script></body></html>

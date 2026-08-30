@@ -577,12 +577,36 @@ def download():
     if not url: return jsonify({"error": "No URL"}), 400
     try:
         headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://animeheaven.me/gate.php"}
+        # Forward Range header from client for resume support
+        client_range = request.headers.get("Range", "")
+        if client_range:
+            headers["Range"] = client_range
+        
         if quality == "original" or quality not in ["720p", "480p", "360p"]:
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
+            resp_headers = {"Content-Disposition": f"attachment; filename={filename}"}
+            if r.headers.get("Content-Length"):
+                resp_headers["Content-Length"] = r.headers.get("Content-Length")
+            if r.headers.get("Content-Range"):
+                resp_headers["Content-Range"] = r.headers.get("Content-Range")
+            if r.headers.get("Accept-Ranges"):
+                resp_headers["Accept-Ranges"] = r.headers.get("Accept-Ranges")
+            status_code = 206 if r.status_code == 206 else 200
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type=r.headers.get("Content-Type", "video/mp4"), headers=resp_headers, status=status_code)
+        
         if not FFMPEG_AVAILABLE:
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
+            resp_headers = {"Content-Disposition": f"attachment; filename={filename}"}
+            if r.headers.get("Content-Length"):
+                resp_headers["Content-Length"] = r.headers.get("Content-Length")
+            if r.headers.get("Content-Range"):
+                resp_headers["Content-Range"] = r.headers.get("Content-Range")
+            if r.headers.get("Accept-Ranges"):
+                resp_headers["Accept-Ranges"] = r.headers.get("Accept-Ranges")
+            status_code = 206 if r.status_code == 206 else 200
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type=r.headers.get("Content-Type", "video/mp4"), headers=resp_headers, status=status_code)
+        
+        # For transcoded downloads, Range resume is not supported (we generate the full file)
         scale_map = {"720p": "1280:720", "480p": "854:480", "360p": "640:360"}
         scale = scale_map.get(quality, "1280:720")
         temp_dir = "/tmp/kyro_" + str(os.getpid())
@@ -622,7 +646,12 @@ def download():
                 if os.path.exists(temp_dir): os.rmdir(temp_dir)
             except: pass
             r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Length": r.headers.get("Content-Length", "")})
+            resp_headers = {"Content-Disposition": f"attachment; filename={filename}"}
+            if r.headers.get("Content-Length"):
+                resp_headers["Content-Length"] = r.headers.get("Content-Length")
+            if r.headers.get("Accept-Ranges"):
+                resp_headers["Accept-Ranges"] = r.headers.get("Accept-Ranges")
+            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers=resp_headers)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
