@@ -1,1 +1,20 @@
-services:    - type: web      name: kyro-ai-anime      runtime: python      plan: free      buildCommand: bash build.sh      startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120      envVars:        - key: PYTHON_VERSION          value: '3.11'        - key: GROQ_API_KEY          value: ''  # Set this in Render dashboard after deployment        - key: FLASK_ENV          value: production        - key: PYTHONDONTWRITEBYTECODE          value: '1'        - key: PYTHONUNBUFFERED          value: '1'  
+services:
+  - type: web
+    name: kyro-anime
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: KYRO_PASSWORD
+        value: kyro2026
+      - key: KYRO_OWNER_KEY
+        generateValue: true
+      - key: KYRO_STAFF_KEY
+        generateValue: true
+      - key: KYRO_ALLOWED_ORIGINS
+        value: https://kyro-anime.onrender.com
