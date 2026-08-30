@@ -1,18 +1,1 @@
-services:
-  - type: web
-    name: kyro-ai-anime
-    runtime: python
-    plan: free
-    buildCommand: bash build.sh
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-    envVars:
-      - key: PYTHON_VERSION
-        value: '3.11'
-      - key: GROQ_API_KEY
-        value: ''
-      - key: FLASK_ENV
-        value: production
-      - key: PYTHONDONTWRITEBYTECODE
-        value: '1'
-      - key: PYTHONUNBUFFERED
-        value: '1'
+services:    - type: web      name: kyro-ai-anime      runtime: python      plan: free      buildCommand: bash build.sh      startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120      envVars:        - key: PYTHON_VERSION          value: '3.11'        - key: GROQ_API_KEY          value: ''  # Set this in Render dashboard after deployment        - key: FLASK_ENV          value: production        - key: PYTHONDONTWRITEBYTECODE          value: '1'        - key: PYTHONUNBUFFERED          value: '1'  
