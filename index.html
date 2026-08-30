@@ -349,6 +349,14 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
       <button class="row-arrow right" onclick="scrollRow(this,1)">&#8250;</button>
     </div>
   </div>
+  <div class="row-section" id="row-seasonal" style="display:none">
+    <div class="row-header"><div class="row-title">This Season</div></div>
+    <div class="row-carousel">
+      <button class="row-arrow left" onclick="scrollRow(this,-1)">&#8249;</button>
+      <div class="row-track snap" id="track-seasonal"></div>
+      <button class="row-arrow right" onclick="scrollRow(this,1)">&#8250;</button>
+    </div>
+  </div>
   <div class="row-section" id="row-favorites" style="display:none">
     <div class="row-header"><div class="row-title">My List</div></div>
     <div class="row-carousel">
@@ -498,8 +506,9 @@ function switchPage(page){
   const map={home:"home",series:"series",movies:"movies",favorites:"favorites"};
   if(map[page]){const el=document.getElementById("nav-"+map[page]);if(el)el.classList.add("active");const bel=document.getElementById("bottom-"+map[page]);if(bel)bel.classList.add("active");}
   if(page==="favorites"){document.getElementById("hero").style.display="none";document.getElementById("row-favorites").style.display="block";renderFavoritesRow();}
-  else if(page==="home"){document.getElementById("hero").style.display="block";document.getElementById("row-favorites").style.display="none";renderAll();}
-  else{document.getElementById("hero").style.display="none";showToast(page.charAt(0).toUpperCase()+page.slice(1)+" coming soon!");}
+  else if(page==="home"){document.getElementById("hero").style.display="block";document.getElementById("row-seasonal").style.display="none";document.getElementById("row-favorites").style.display="none";renderAll();}
+  else if(page==="series"){document.getElementById("hero").style.display="none";document.getElementById("row-seasonal").style.display="block";document.getElementById("row-favorites").style.display="none";renderSeasonalRow();}
+  else{document.getElementById("hero").style.display="none";document.getElementById("row-seasonal").style.display="none";showToast(page.charAt(0).toUpperCase()+page.slice(1)+" coming soon!");}
   window.scrollTo(0,0);
 }
 function goHome(){switchPage("home");}
@@ -763,7 +772,18 @@ function toggleQueuePanel(){document.getElementById("queue-panel").classList.tog
 
 function showToast(msg,type=""){const t=document.getElementById("toast");t.textContent=msg;t.className="toast "+(type||"");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),4000);}
 
-function renderAll(){renderContinueWatching();renderTrendingRow();renderTop10Row();renderFavoritesRow();renderRecentRow();}
+let seasonalData=[];
+async function loadSeasonal(){
+  try{const r=await fetch("/api/seasonal");const data=await r.json();seasonalData=data.results||[];renderSeasonalRow();}
+  catch(e){console.error("Failed to load seasonal",e);}
+}
+function renderSeasonalRow(){
+  const sec=document.getElementById("row-seasonal");const track=document.getElementById("track-seasonal");
+  if(!seasonalData.length){track.innerHTML='<div class="loading"><div class="spinner"></div>Loading this season...</div>';return;}
+  sec.style.display="block";
+  track.innerHTML=seasonalData.map(a=>renderCard(a)).join("");
+}
+function renderAll(){renderContinueWatching();renderTrendingRow();renderTop10Row();renderFavoritesRow();renderRecentRow();loadSeasonal();}
 function renderContinueWatching(){
   const rec=LS.get("recent");const sec=document.getElementById("row-continue");const track=document.getElementById("track-continue");
   if(!rec.length){sec.style.display="none";return;}sec.style.display="block";

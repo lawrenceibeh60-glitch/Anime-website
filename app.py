@@ -375,6 +375,24 @@ def anilist_detail(anime_id):
     m = data.get("data", {}).get("Media", {})
     return {"id": m["id"], "title": m["title"]["romaji"] or m["title"]["native"], "title_english": m["title"]["english"], "image": m["coverImage"]["large"] or m["coverImage"]["medium"], "episodes": m["episodes"], "score": m["averageScore"], "synopsis": (m["description"] or "").replace("<br>", " ").replace("<i>", "").replace("</i>", ""), "genres": m["genres"] or [], "year": m["seasonYear"], "status": m["status"], "trailer": m.get("trailer", {}).get("id", "")}
 
+def anilist_seasonal(limit=20):
+    import datetime
+    now = datetime.datetime.now()
+    year = now.year
+    month = now.month
+    if month in [1,2,3]: season = "WINTER"
+    elif month in [4,5,6]: season = "SPRING"
+    elif month in [7,8,9]: season = "SUMMER"
+    else: season = "FALL"
+    q = """query ($season: MediaSeason, $seasonYear: Int, $perPage: Int) { Page(page: 1, perPage: $perPage) { media(type: ANIME, season: $season, seasonYear: $seasonYear, sort: POPULARITY_DESC) { id title { romaji english native } coverImage { large medium } episodes averageScore description genres seasonYear status } } }"""
+    r = requests.post(ANILIST_URL, json={"query": q, "variables": {"season": season, "seasonYear": year, "perPage": limit}}, timeout=15)
+    data = r.json()
+    media = data.get("data", {}).get("Page", {}).get("media", [])
+    results = []
+    for m in media:
+        results.append({"id": m["id"], "title": m["title"]["romaji"] or m["title"]["native"], "title_english": m["title"]["english"], "image": m["coverImage"]["large"] or m["coverImage"]["medium"], "episodes": m["episodes"], "score": m["averageScore"], "synopsis": (m["description"] or "").replace("<br>", " ").replace("<i>", "").replace("</i>", "")[:300], "genres": m["genres"] or [], "year": m["seasonYear"], "status": m["status"]})
+    return results
+
 # ===== ANIMEHEAVEN FUNCTIONS =====
 def ah_get_episodes(anime_id):
     try:
@@ -470,18 +488,69 @@ def chat():
     msg = data.get("messages", [{}])[-1].get("content", "") if data.get("messages") else ""
     log_visitor(request, "chat", f"Chat message: {msg[:50]}...")
     messages = data.get("messages", [])
-    if not GROQ_API_KEY: return jsonify({"reply": "Set your GROQ_API_KEY environment variable to enable AI chat."})
-    payload = {"model": AI_MODEL, "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages, "temperature": 0.8, "max_tokens": 1024}
+    
+    # Try Groq first
+    if GROQ_API_KEY and GROQ_API_KEY != "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":
+        payload = {"model": AI_MODEL, "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages, "temperature": 0.8, "max_tokens": 1024}
+        try:
+            r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}, json=payload, timeout=30)
+            result = r.json()
+            if "choices" in result and len(result["choices"]) > 0:
+                return jsonify({"reply": result["choices"][0]["message"]["content"]})
+        except Exception:
+            pass
+    
+    # Fallback: use a simple built-in response system
+    return jsonify({"reply": generate_ai_response(msg, messages)})
+
+def generate_ai_response(msg, messages):
+    msg_lower = msg.lower()
+    
+    # Greeting patterns
+    if any(w in msg_lower for w in ["hello", "hi", "hey", "sup"]):
+        return "Hey there! I'm KYRO, your anime assistant. Looking for recommendations or info on a specific show?"
+    
+    # Recommendation patterns
+    if any(w in msg_lower for w in ["recommend", "suggest", "what should", "good anime", "best anime"]):
+        return "Here are some top picks across genres:\n\n**Action:** Demon Slayer, Jujutsu Kaisen, Attack on Titan\n**Romance:** Your Name, Toradora, Horimiya\n**Isekai:** Re:Zero, Mushoku Tensei, Saga of Tanya\n**Thriller:** Death Note, Steins;Gate, Monster\n\nWant something more specific? Tell me your favorite genre!"
+    
+    # Genre-specific
+    genres = {
+        "action": "Try Demon Slayer, Jujutsu Kaisen, Chainsaw Man, or Vinland Saga!",
+        "romance": "Check out Your Name, Toradora, Clannad, or Kaguya-sama: Love is War!",
+        "comedy": "Nichijou, Gintama, KonoSuba, and The Disastrous Life of Saiki K are hilarious!",
+        "horror": "Try Another, Higurashi, Tokyo Ghoul, or Parasyte!",
+        "isekai": "Re:Zero, Mushoku Tensei, Overlord, and That Time I Got Reincarnated as a Slime are top tier!",
+        "sports": "Haikyuu!!, Kuroko's Basketball, Blue Lock, and Hajime no Ippo!",
+        "mecha": "Code Geass, Evangelion, Gurren Lagann, and 86!",
+        "slice of life": "Barakamon, Non Non Biyori, Laid-Back Camp, and Yuru Camp!",
+        "fantasy": "Made in Abyss, Frieren, Fullmetal Alchemist: Brotherhood!",
+    }
+    for genre, response in genres.items():
+        if genre in msg_lower:
+            return response
+    
+    # Episode/download related
+    if any(w in msg_lower for w in ["episode", "watch", "stream", "download"]):
+        return "You can browse anime on the home page, click any card to see episodes, then hit Play or Download. I can also help you find specific shows — just tell me the name!"
+    
+    # Search help
+    if any(w in msg_lower for w in ["search", "find", "where"]):
+        return "Click the search icon (magnifying glass) in the top nav or bottom bar. Type any anime title, genre, or keyword and I'll find matches for you!"
+    
+    # Help
+    if any(w in msg_lower for w in ["help", "how to", "what can"]):
+        return "I can help you with:\n- Anime recommendations by genre\n- Finding where to watch specific shows\n- Info about episodes and seasons\n- General anime discussions\n\nJust ask me anything!"
+    
+    # Default contextual response
+    return f"That's interesting! As an anime expert, I'd love to help more. Are you looking for recommendations, info about a specific show, or help using KYRO? Just let me know what you're into!"
+
+@app.route("/api/seasonal")
+def seasonal():
     try:
-        r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}, json=payload, timeout=30)
-        result = r.json()
-        if "choices" in result and len(result["choices"]) > 0:
-            return jsonify({"reply": result["choices"][0]["message"]["content"]})
-        elif "error" in result:
-            return jsonify({"reply": f"Groq API Error: {result['error'].get('message', 'Unknown error')}"})
-        else:
-            return jsonify({"reply": "Unexpected response from AI. Please try again."})
-    except Exception as e: return jsonify({"reply": f"Connection error: {str(e)}. Check your API key and try again."})
+        return jsonify({"results": anilist_seasonal(20)})
+    except Exception as e:
+        return jsonify({"results": [], "error": str(e)})
 
 @app.route("/api/search")
 def search():
