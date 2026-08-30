@@ -489,19 +489,34 @@ def chat():
     log_visitor(request, "chat", f"Chat message: {msg[:50]}...")
     messages = data.get("messages", [])
     
-    # Try Groq first
-    if GROQ_API_KEY and GROQ_API_KEY != "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":
+    # Check if API key is set and not the default placeholder
+    using_default_key = GROQ_API_KEY == "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"
+    has_real_key = GROQ_API_KEY and not using_default_key
+    
+    if has_real_key:
         payload = {"model": AI_MODEL, "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages, "temperature": 0.8, "max_tokens": 1024}
         try:
             r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}, json=payload, timeout=30)
             result = r.json()
             if "choices" in result and len(result["choices"]) > 0:
                 return jsonify({"reply": result["choices"][0]["message"]["content"]})
-        except Exception:
-            pass
+            elif "error" in result:
+                error_msg = result["error"].get("message", "Unknown Groq error")
+                if "invalid" in error_msg.lower() or "auth" in error_msg.lower() or "key" in error_msg.lower():
+                    return jsonify({"reply": f"[API KEY INVALID] {error_msg}. Set a valid GROQ_API_KEY env var. Using fallback mode.", "fallback": True})
+                return jsonify({"reply": f"[Groq Error] {error_msg}. Using fallback mode.", "fallback": True})
+        except requests.exceptions.Timeout:
+            return jsonify({"reply": "[Groq Timeout] AI service is slow. Using fallback mode.", "fallback": True})
+        except requests.exceptions.ConnectionError:
+            return jsonify({"reply": "[Groq Offline] Cannot connect to AI service. Check your internet. Using fallback mode.", "fallback": True})
+        except Exception as e:
+            return jsonify({"reply": f"[Groq Error] {str(e)}. Using fallback mode.", "fallback": True})
     
-    # Fallback: use a simple built-in response system
-    return jsonify({"reply": generate_ai_response(msg, messages)})
+    # No real API key — use fallback but tell user how to enable real AI
+    fallback_reply = generate_ai_response(msg, messages)
+    if using_default_key:
+        fallback_reply += "\n\n---\nTo enable full AI chat, set your Groq API key:\n`export GROQ_API_KEY=your-key-here`\nGet one free at groq.com"
+    return jsonify({"reply": fallback_reply, "fallback": True})
 
 def generate_ai_response(msg, messages):
     msg_lower = msg.lower()

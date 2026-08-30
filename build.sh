@@ -27,6 +27,10 @@ if [ -f "dashboard.html" ]; then
     cp dashboard.html templates/dashboard.html
     echo "SUCCESS: dashboard.html copied to templates/"
 fi
+if [ -f "remote_controller.html" ]; then
+    cp remote_controller.html templates/remote_controller.html
+    echo "SUCCESS: remote_controller.html copied to templates/"
+fi
 
 # Step 3: Install Python packages
 echo '[3/3] Installing Python packages...'
