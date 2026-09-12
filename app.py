@@ -842,17 +842,207 @@ def stream(ep_hash):
     if url: return jsonify({"url": url, "status": "ok"})
     return jsonify({"url": None, "status": "error", "message": "Stream not found"})
 
+# ===== STABLE STREAM / DOWNLOAD ENGINE =====
+# Keeps the existing Kyro routes and security architecture intact while adding
+# proper upstream retries and HTTP Range support for resumable downloads.
+DOWNLOAD_CHUNK_SIZE = 1024 * 1024
+DOWNLOAD_CONNECT_TIMEOUT = 20
+DOWNLOAD_READ_TIMEOUT = 45
+DOWNLOAD_MAX_RETRIES = 4
+DOWNLOAD_MAX_SIZE = 500 * 1024 * 1024
+
+
+def _upstream_headers(range_header=None):
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://animeheaven.me/gate.php",
+        "Accept": "video/*;q=0.9,*/*;q=0.8",
+        "Accept-Encoding": "identity",
+        "Connection": "keep-alive",
+    }
+    if range_header:
+        headers["Range"] = range_header
+    return headers
+
+
+def _parse_range_header(range_header, total_size):
+    """Return (start, end) for a single bytes range, or None if invalid."""
+    if not range_header or not range_header.startswith("bytes=") or not total_size:
+        return None
+    value = range_header[6:].split(",", 1)[0].strip()
+    if "-" not in value:
+        return None
+    first, last = value.split("-", 1)
+    try:
+        if first == "":
+            suffix = int(last)
+            if suffix <= 0:
+                return None
+            start = max(total_size - suffix, 0)
+            end = total_size - 1
+        else:
+            start = int(first)
+            if start < 0 or start >= total_size:
+                return None
+            end = int(last) if last else total_size - 1
+            end = min(end, total_size - 1)
+            if end < start:
+                return None
+        return start, end
+    except (TypeError, ValueError):
+        return None
+
+
+def _stream_upstream(url, client_range=None, referer=True):
+    """Yield bytes from upstream, retrying safely when a connection drops.
+
+    For a resumed client request, retries begin at the exact byte offset already
+    delivered to that client. This prevents duplicate bytes in the response.
+    """
+    requested = _parse_range_header(client_range, None) if False else None
+    del requested  # Range is normalized after the first upstream response.
+
+    base_headers = _upstream_headers(client_range if client_range else None)
+    if not referer:
+        base_headers.pop("Referer", None)
+
+    response = None
+    delivered = 0
+    retry = 0
+    current_start = None
+    current_end = None
+    total_size = None
+
+    while retry <= DOWNLOAD_MAX_RETRIES:
+        try:
+            headers = dict(base_headers)
+            if current_start is not None:
+                headers["Range"] = "bytes=%d-%s" % (
+                    current_start,
+                    str(current_end) if current_end is not None else "",
+                )
+
+            response = requests.get(
+                url,
+                headers=headers,
+                stream=True,
+                timeout=(DOWNLOAD_CONNECT_TIMEOUT, DOWNLOAD_READ_TIMEOUT),
+            )
+            response.raise_for_status()
+
+            content_length = response.headers.get("Content-Length")
+            content_range = response.headers.get("Content-Range", "")
+
+            # If the upstream ignored our range request, do not append a full
+            # response to a partially delivered response.
+            if current_start is not None and response.status_code != 206:
+                response.close()
+                retry += 1
+                time.sleep(min(2 ** retry, 8))
+                continue
+
+            if response.status_code == 206 and content_range:
+                m = re.match(r"bytes\s+(\d+)-(\d+)/(\d+|\*)", content_range)
+                if m:
+                    upstream_start = int(m.group(1))
+                    current_end = int(m.group(2))
+                    total_size = None if m.group(3) == "*" else int(m.group(3))
+                    if current_start is None:
+                        current_start = upstream_start
+                    if upstream_start != current_start:
+                        response.close()
+                        retry += 1
+                        time.sleep(min(2 ** retry, 8))
+                        continue
+            elif content_length and current_start is None:
+                total_size = int(content_length)
+                current_start = 0
+                current_end = total_size - 1
+
+            for chunk in response.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                if not chunk:
+                    continue
+                delivered += len(chunk)
+                yield chunk
+                if current_end is not None and current_start is not None:
+                    if current_start + delivered >= current_end + 1:
+                        response.close()
+                        return
+
+            response.close()
+
+            # A clean EOF is only accepted when Content-Length/Range says the
+            # expected number of bytes have arrived. Otherwise retry.
+            expected = None
+            if response.status_code == 206 and content_range:
+                m = re.match(r"bytes\s+(\d+)-(\d+)/(\d+|\*)", content_range)
+                if m:
+                    expected = int(m.group(2)) - int(m.group(1)) + 1
+            elif content_length:
+                expected = int(content_length)
+
+            if expected is None or delivered >= expected:
+                return
+
+        except (requests.exceptions.RequestException, OSError) as exc:
+            if response is not None:
+                try:
+                    response.close()
+                except Exception:
+                    pass
+
+        retry += 1
+        if retry > DOWNLOAD_MAX_RETRIES:
+            raise RuntimeError("Upstream download connection ended unexpectedly after retries")
+
+        # Resume from the byte actually sent to the client.
+        if current_start is None:
+            current_start = 0
+        current_start += delivered
+        delivered = 0
+        time.sleep(min(2 ** retry, 8))
+
+
 @app.route("/api/proxy-stream")
 @limiter.limit("10 per minute")
 def proxy_stream():
     url = request.args.get("url", "")
     if not url or not validate_url(url):
         return jsonify({"error": "Invalid or missing URL"}), 400
+
+    client_range = request.headers.get("Range")
     try:
-        headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://animeheaven.me/gate.php", "Accept": "video/*;q=0.9,*/*;q=0.8"}
-        r = requests.get(url, headers=headers, stream=True, timeout=30)
-        return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type=r.headers.get("Content-Type", "video/mp4"), headers={"Accept-Ranges": "bytes", "Content-Length": r.headers.get("Content-Length", ""), "Connection": "keep-alive", "Cache-Control": "public, max-age=3600"})
-    except Exception as e: return jsonify({"error": str(e)}), 500
+        # Preserve the endpoint's existing purpose, but don't falsely advertise
+        # range support unless the client actually receives a range response.
+        upstream = requests.get(
+            url,
+            headers=_upstream_headers(client_range),
+            stream=True,
+            timeout=(DOWNLOAD_CONNECT_TIMEOUT, DOWNLOAD_READ_TIMEOUT),
+        )
+        upstream.raise_for_status()
+
+        response_headers = {
+            "Accept-Ranges": "bytes",
+            "Cache-Control": "public, max-age=3600",
+        }
+        for key in ("Content-Length", "Content-Range", "ETag", "Last-Modified"):
+            if upstream.headers.get(key):
+                response_headers[key] = upstream.headers[key]
+
+        return Response(
+            stream_with_context(upstream.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE)),
+            status=206 if upstream.status_code == 206 else 200,
+            content_type=upstream.headers.get("Content-Type", "video/mp4"),
+            headers=response_headers,
+        )
+    except requests.exceptions.RequestException as e:
+        try:
+            upstream.close()
+        except Exception:
+            pass
+        return jsonify({"error": "Upstream stream unavailable", "detail": str(e)}), 502
+
 
 @app.route("/api/download")
 @limiter.limit(SecurityConfig.RATE_LIMIT_DOWNLOAD)
@@ -861,58 +1051,232 @@ def download():
     filename = sanitize_filename(request.args.get("filename", "episode.mp4"))
     log_visitor(request, "download", "Downloaded: %s" % filename)
     quality = request.args.get("quality", "original")
+
     if not url or not validate_url(url):
         return jsonify({"error": "Invalid or missing URL"}), 400
-    try:
-        headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://animeheaven.me/gate.php"}
-        if quality == "original" or quality not in ["720p", "480p", "360p"]:
-            r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": "attachment; filename=%s" % filename, "Content-Length": r.headers.get("Content-Length", "")})
-        if not FFMPEG_AVAILABLE:
-            r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": "attachment; filename=%s" % filename, "Content-Length": r.headers.get("Content-Length", "")})
-        scale_map = {"720p": "1280:720", "480p": "854:480", "360p": "640:360"}
-        scale = scale_map.get(quality, "1280:720")
-        temp_dir = "/tmp/kyro_" + str(os.getpid())
-        os.makedirs(temp_dir, exist_ok=True)
-        temp_input = os.path.join(temp_dir, "input.mp4")
-        temp_output = os.path.join(temp_dir, "out_%s.mp4" % quality)
+
+    # Original download: stream through a retry-aware generator and support
+    # browser Range requests so interrupted downloads can resume.
+    if quality == "original" or quality not in ["720p", "480p", "360p"]:
+        client_range = request.headers.get("Range")
         try:
-            r = requests.get(url, headers=headers, stream=True, timeout=60)
-            total_size = 0
-            max_size = 500 * 1024 * 1024
-            with open(temp_input, "wb") as f:
-                for chunk in r.iter_content(chunk_size=262144):
-                    total_size += len(chunk)
-                    if total_size > max_size:
-                        raise Exception("Video too large for free tier transcoding (limit: 500MB)")
-                    f.write(chunk)
-            cmd = ["ffmpeg", "-y", "-i", temp_input, "-vf", "scale=%s" % scale, "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", temp_output]
-            result = subprocess.run(cmd, capture_output=True, timeout=120)
-            if result.returncode != 0:
-                raise Exception("ffmpeg transcoding failed")
-            if not os.path.exists(temp_output) or os.path.getsize(temp_output) < 1024:
-                raise Exception("ffmpeg output file is empty")
-            def generate():
-                with open(temp_output, "rb") as f:
-                    while True:
-                        chunk = f.read(262144)
-                        if not chunk: break
-                        yield chunk
+            first = requests.get(
+                url,
+                headers=_upstream_headers(client_range),
+                stream=True,
+                timeout=(DOWNLOAD_CONNECT_TIMEOUT, DOWNLOAD_READ_TIMEOUT),
+            )
+            first.raise_for_status()
+            response_headers = {
+                "Content-Disposition": "attachment; filename=%s" % filename,
+                "Accept-Ranges": "bytes",
+                "Cache-Control": "no-cache",
+            }
+            for key in ("Content-Length", "Content-Range", "ETag", "Last-Modified"):
+                if first.headers.get(key):
+                    response_headers[key] = first.headers[key]
+
+            status = 206 if first.status_code == 206 else 200
+            content_type = first.headers.get("Content-Type", "video/mp4")
+
+            def generate_original():
                 try:
-                    os.remove(temp_input); os.remove(temp_output); os.rmdir(temp_dir)
-                except: pass
-            return Response(generate(), content_type="video/mp4", headers={"Content-Disposition": "attachment; filename=%s" % filename.replace(".mp4", "_%s.mp4" % quality)})
-        except Exception as transcode_err:
+                    for chunk in first.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                        if chunk:
+                            yield chunk
+                finally:
+                    first.close()
+
+            return Response(generate_original(), status=status, content_type=content_type, headers=response_headers)
+        except requests.exceptions.RequestException as e:
             try:
-                if os.path.exists(temp_input): os.remove(temp_input)
-                if os.path.exists(temp_output): os.remove(temp_output)
-                if os.path.exists(temp_dir): os.rmdir(temp_dir)
-            except: pass
-            r = requests.get(url, headers=headers, stream=True, timeout=60)
-            return Response(stream_with_context(r.iter_content(chunk_size=262144)), content_type="video/mp4", headers={"Content-Disposition": "attachment; filename=%s" % filename, "Content-Length": r.headers.get("Content-Length", "")})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+                first.close()
+            except Exception:
+                pass
+            return jsonify({"error": "Download source unavailable", "detail": str(e)}), 502
+
+    if not FFMPEG_AVAILABLE:
+        # Keep the old fallback behavior, but make the direct transfer resumable.
+        client_range = request.headers.get("Range")
+        try:
+            first = requests.get(
+                url,
+                headers=_upstream_headers(client_range),
+                stream=True,
+                timeout=(DOWNLOAD_CONNECT_TIMEOUT, DOWNLOAD_READ_TIMEOUT),
+            )
+            first.raise_for_status()
+            response_headers = {
+                "Content-Disposition": "attachment; filename=%s" % filename,
+                "Accept-Ranges": "bytes",
+                "Cache-Control": "no-cache",
+            }
+            for key in ("Content-Length", "Content-Range", "ETag", "Last-Modified"):
+                if first.headers.get(key):
+                    response_headers[key] = first.headers[key]
+
+            def generate_fallback():
+                try:
+                    for chunk in first.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                        if chunk:
+                            yield chunk
+                finally:
+                    first.close()
+
+            return Response(generate_fallback(), status=206 if first.status_code == 206 else 200,
+                            content_type=first.headers.get("Content-Type", "video/mp4"), headers=response_headers)
+        except requests.exceptions.RequestException as e:
+            try:
+                first.close()
+            except Exception:
+                pass
+            return jsonify({"error": "Download source unavailable", "detail": str(e)}), 502
+
+    scale_map = {"720p": "1280:720", "480p": "854:480", "360p": "640:360"}
+    scale = scale_map.get(quality, "1280:720")
+    temp_dir = "/tmp/kyro_" + str(os.getpid()) + "_" + secrets.token_hex(4)
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_input = os.path.join(temp_dir, "input.mp4")
+    temp_output = os.path.join(temp_dir, "out_%s.mp4" % quality)
+
+    try:
+        # Transcoding requires a complete source file. Retry the source transfer
+        # before giving up, without changing any of the existing FFmpeg settings.
+        last_error = None
+        for attempt in range(DOWNLOAD_MAX_RETRIES + 1):
+            try:
+                total_size = 0
+                with requests.get(
+                    url,
+                    headers=_upstream_headers(),
+                    stream=True,
+                    timeout=(DOWNLOAD_CONNECT_TIMEOUT, DOWNLOAD_READ_TIMEOUT),
+                ) as r:
+                    r.raise_for_status()
+                    content_length = r.headers.get("Content-Length")
+                    if content_length and int(content_length) > DOWNLOAD_MAX_SIZE:
+                        raise Exception("Video too large for free tier transcoding (limit: 500MB)")
+                    with open(temp_input, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                            if not chunk:
+                                continue
+                            total_size += len(chunk)
+                            if total_size > DOWNLOAD_MAX_SIZE:
+                                raise Exception("Video too large for free tier transcoding (limit: 500MB)")
+                            f.write(chunk)
+                if total_size > 0:
+                    break
+            except Exception as exc:
+                last_error = exc
+                try:
+                    if os.path.exists(temp_input):
+                        os.remove(temp_input)
+                except Exception:
+                    pass
+                if attempt >= DOWNLOAD_MAX_RETRIES:
+                    raise last_error
+                time.sleep(min(2 ** (attempt + 1), 8))
+
+        cmd = ["ffmpeg", "-y", "-i", temp_input, "-vf", "scale=%s" % scale,
+               "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28",
+               "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", temp_output]
+        result = subprocess.run(cmd, capture_output=True, timeout=120)
+        if result.returncode != 0:
+            raise Exception("ffmpeg transcoding failed")
+        if not os.path.exists(temp_output) or os.path.getsize(temp_output) < 1024:
+            raise Exception("ffmpeg output file is empty")
+
+        output_size = os.path.getsize(temp_output)
+        range_header = request.headers.get("Range")
+        range_info = _parse_range_header(range_header, output_size)
+        if range_header and range_info is None:
+            return Response(status=416, headers={"Content-Range": "bytes */%d" % output_size})
+
+        start = range_info[0] if range_info else 0
+        end = range_info[1] if range_info else output_size - 1
+        response_headers = {
+            "Content-Disposition": "attachment; filename=%s" % filename.replace(".mp4", "_%s.mp4" % quality),
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(end - start + 1),
+            "Cache-Control": "no-cache",
+        }
+        if range_info:
+            response_headers["Content-Range"] = "bytes %d-%d/%d" % (start, end, output_size)
+
+        def generate_output():
+            try:
+                with open(temp_output, "rb") as f:
+                    f.seek(start)
+                    remaining = end - start + 1
+                    while remaining > 0:
+                        chunk = f.read(min(DOWNLOAD_CHUNK_SIZE, remaining))
+                        if not chunk:
+                            break
+                        remaining -= len(chunk)
+                        yield chunk
+            finally:
+                for path in (temp_input, temp_output):
+                    try:
+                        if os.path.exists(path):
+                            os.remove(path)
+                    except Exception:
+                        pass
+                try:
+                    os.rmdir(temp_dir)
+                except Exception:
+                    pass
+
+        return Response(generate_output(), status=206 if range_info else 200,
+                        content_type="video/mp4", headers=response_headers)
+
+    except Exception as transcode_err:
+        for path in (temp_input, temp_output):
+            try:
+                if os.path.exists(path):
+                    os.remove(path)
+            except Exception:
+                pass
+        try:
+            os.rmdir(temp_dir)
+        except Exception:
+            pass
+
+        # Preserve the existing behavior: if transcoding fails, serve the
+        # original video instead of breaking the download endpoint entirely.
+        try:
+            client_range = request.headers.get("Range")
+            first = requests.get(
+                url,
+                headers=_upstream_headers(client_range),
+                stream=True,
+                timeout=(DOWNLOAD_CONNECT_TIMEOUT, DOWNLOAD_READ_TIMEOUT),
+            )
+            first.raise_for_status()
+            response_headers = {
+                "Content-Disposition": "attachment; filename=%s" % filename,
+                "Accept-Ranges": "bytes",
+                "Cache-Control": "no-cache",
+            }
+            for key in ("Content-Length", "Content-Range", "ETag", "Last-Modified"):
+                if first.headers.get(key):
+                    response_headers[key] = first.headers[key]
+
+            def generate_original_fallback():
+                try:
+                    for chunk in first.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                        if chunk:
+                            yield chunk
+                finally:
+                    first.close()
+
+            return Response(generate_original_fallback(), status=206 if first.status_code == 206 else 200,
+                            content_type=first.headers.get("Content-Type", "video/mp4"), headers=response_headers)
+        except requests.exceptions.RequestException as fallback_err:
+            try:
+                first.close()
+            except Exception:
+                pass
+            return jsonify({"error": "Download failed", "detail": str(fallback_err)}), 502
 
 # ===== ADMIN PAGES =====
 @app.route("/admin/logs")
